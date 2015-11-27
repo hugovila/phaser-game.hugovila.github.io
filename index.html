@@ -20,6 +20,7 @@ var player;
 var platforms;
 var cursors;
 var stars;
+var currentSpeed = 0;
 
 function preload() {
 
@@ -58,15 +59,19 @@ function create() {
     ledge.body.immovable = true;
 
     var ledge2 = platforms.create(-150, 250, 'ground');
-    ledge.body.immovable = true;
+    ledge2.body.immovable = true;
 
     //Creamos al personaje jugador
     player = game.add.sprite(32, game.world.height - 150, 'dude');
 
     //Creamos las fisicas del personaje
-    game.physics.arcade.enable(player);
+    //game.physics.arcade.enable(player);
 
     // Caracteristicas fisicas del personaje
+    game.physics.enable(player, Phaser.Physics.ARCADE);
+    player.body.drag.set(0.2);
+    player.body.maxVelocity.setTo(400, 400);
+
     player.body.bounce.y = 0.2;
     player.body.gravity.y = 300;
     player.body.collideWorldBounds = true;
@@ -88,15 +93,19 @@ function update() {
     //  Player en estatico
     player.body.velocity.x = 0;
 
+   
+
     if (cursors.left.isDown)
     {
-        //  Movemos a la izquierda
+    	
+        //  Movemos a la izquier
         player.body.velocity.x = -150;
 
         player.animations.play('left');
     }
     else if (cursors.right.isDown)
     {
+    
         //  Movemos a la drecha
         player.body.velocity.x = 150;
 
@@ -104,8 +113,12 @@ function update() {
     }
     else
     {
+
+    
+
         //  Estatico
         player.animations.stop();
+
 
         player.frame = 4;
     }
