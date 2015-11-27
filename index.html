@@ -16,10 +16,11 @@
 
 var game = new Phaser.Game(800,600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
-var player;
+var player, player1;
 var platforms;
 var cursors;
 var stars;
+var keyA, keyD, keyW , keyR;
 
 
 //vidas
@@ -34,6 +35,10 @@ var pollo;
 var bullets;
 var bullet;
 var bulletTime = 0;
+
+var bullets1;
+var bullet1;
+var bulletTime1 = 0;
 
 var direccion = 0;
 
@@ -57,8 +62,6 @@ function create() {
 
     //Genera pollos
     game.time.events.repeat(5000, 10, createPollo, this);
-
-    
 
 	//Cargamos las fisicas arcade para nuestro videojuego
 	game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -88,40 +91,52 @@ function create() {
     var ledge2 = platforms.create(-150, 250, 'ground');
     ledge2.body.immovable = true;
 
-    //Creamos al personaje jugador
+   //Creamos al personaje jugador
     player = game.add.sprite(32, game.world.height - 150, 'dude');
+    player1 = game.add.sprite(64, game.world.height - 450, 'dude');
 
     //Creamos las fisicas del personaje
     game.physics.arcade.enable(player);
+    game.physics.arcade.enable(player1);
 
     // Caracteristicas fisicas del personaje
     player.body.bounce.y = 0.2;
     player.body.gravity.y = 300;
     player.body.collideWorldBounds = true;
 
+    player1.body.bounce.y = 0.2;
+    player1.body.gravity.y = 300;
+    player1.body.collideWorldBounds = true;
+
     //  Animaciones.
     player.animations.add('left', [0, 1, 2, 3], 10, true);
     player.animations.add('right', [5, 6, 7, 8], 10, true);
 
+    player1.animations.add('left', [0, 1, 2, 3], 10, true);
+    player1.animations.add('right', [5, 6, 7, 8], 10, true);
+
+
     //Controles por teclado
      cursors = game.input.keyboard.createCursorKeys();
+     keyA = game.input.keyboard.addKey(Phaser.Keyboard.A);
+     keyD = game.input.keyboard.addKey(Phaser.Keyboard.D);
+     keyW = game.input.keyboard.addKey(Phaser.Keyboard.W);
+     keyR = game.input.keyboard.addKey(Phaser.Keyboard.R);
 
 	 game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
+      game.input.keyboard.addKeyCapture([ Phaser.Keyboard.X ]);
+   
 	 /* Balas */
 	
 	bullets = game.add.group();
     bullets.enableBody = true;
     bullets.physicsBodyType = Phaser.Physics.ARCADE;
 	 bullets.createMultiple(30, 'bala');
-    /*for (var i = 0; i < 20; i++)
-    {
-        var b = bullets.create(0, 0, 'bala');
-        b.name = 'bala' + i;
-        b.exists = false;
-        b.visible = false;
-        b.checkWorldBounds = true;
-        b.events.onOutOfBounds.add(resetBullet, this);
-    }*/
+
+     bullets1 = game.add.group();
+    bullets1.enableBody = true;
+    bullets1.physicsBodyType = Phaser.Physics.ARCADE;
+     bullets1.createMultiple(30, 'bala');
 }
 
 function update() {
@@ -130,19 +145,27 @@ function update() {
     game.physics.arcade.collide(player, platforms);
     game.physics.arcade.collide(life, platforms);
     game.physics.arcade.collide(pollo, platforms);
+    game.physics.arcade.collide(player1, platforms);
+    game.physics.arcade.collide(player,player1);
     
 
 	player.body.checkCollision.up = false;
+    player1.body.checkCollision.up = false;
 	//game.physics.arcade.collide(bullets, platforms);
 	
-	 game.physics.arcade.collide(bullets, platforms,destroyBullet);
+	game.physics.arcade.collide(bullets, platforms,destroyBullet);
+    game.physics.arcade.collide(bullets1, platforms,destroyBullet);
 
     game.physics.arcade.overlap(player, life, collectLife, null, this);
     game.physics.arcade.overlap(player, pollo, collectPollo, null, this);
+    game.physics.arcade.overlap(player1, life, collectLife, null, this);
+    game.physics.arcade.overlap(player1, pollo, collectPollo, null, this);
+
 
 
     //  Player en estatico
     player.body.velocity.x = 0;
+    player1.body.velocity.x = 0;
 
     if (cursors.left.isDown)
     {
@@ -175,16 +198,49 @@ function update() {
         player.frame = 4;
     }
     
+
+    if (keyA.isDown)
+   {
+       //  Movemos a la izquierda
+       player1.body.velocity.x = -150;
+
+       player1.animations.play('left');
+   }
+   else if (keyD.isDown)
+   {
+       //  Movemos a la drecha
+       player1.body.velocity.x = 150;
+
+       player1.animations.play('right');
+   }else
+   {
+       //  Estatico
+       player1.animations.stop();
+
+       player1.frame = 4;
+   }
+
+
     //  Permitimos el salto
     if (cursors.up.isDown && player.body.touching.down)
     {
         player.body.velocity.y = -350;
     }
 	
+     if (keyW.isDown && player1.body.touching.down)
+   {
+     player1.body.velocity.y = -350;
+   }
+
 	// Disparar
 	if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) && direccion != 0)
     {
         fireBullet();
+    }
+
+    if (game.input.keyboard.isDown(Phaser.Keyboard.X)&& direccion != 0)
+    {
+        fireBullet1();
     }
 }
 
@@ -192,8 +248,12 @@ function update() {
 		bullet.kill();
 	}
 
+    function destroyBullet1(bullet1,platforms) {
+        bullet1.kill();
+    }
+
 	//metodo de disparo
-	function fireBullet () {
+function fireBullet () {
 
     if (game.time.now > bulletTime)
     {
@@ -202,14 +262,36 @@ function update() {
         if (bullet)
         {
             bullet.reset(player.x + 6, player.y - 8);
-			if (direccion == -1)
-				bullet.body.velocity.x = -300;
-			else if (direccion == 1)
-				bullet.body.velocity.x = 300;
+            if (direccion == -1)
+                bullet.body.velocity.x = -300;
+            else if (direccion == 1)
+                bullet.body.velocity.x = 300;
             bulletTime = game.time.now + 150;
         }
     }
 }
+
+
+ function fireBullet1 () {
+
+    if (game.time.now > bulletTime1)
+    {
+        bullet1 = bullets1.getFirstExists(false);
+
+        if (bullet1)
+        {
+            bullet1.reset(player1.x + 6, player1.y - 8);
+            if (direccion == -1)
+                bullet1.body.velocity.x = -300;
+            else if (direccion == 1)
+                bullet1.body.velocity.x = 300;
+            bulletTime1 = game.time.now + 150;
+        }
+    }
+}
+
+
+ 
 
 	
 	
@@ -217,6 +299,12 @@ function update() {
 function resetBullet (bullet) {
 
     bullet.kill();
+
+}
+
+function resetBullet1 (bullet1) {
+
+    bullet1.kill();
 
 }
 
