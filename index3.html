@@ -7,6 +7,7 @@
     <style type="text/css">
         body {
             margin: 0;
+			background-color: #313941;
         }
 		#game {
 			/*min-height: 10em;*/
@@ -42,7 +43,7 @@
 	<div class="wrapper">
 <script type="text/javascript">
 
-var game = new Phaser.Game(800,600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+var game = new Phaser.Game(968,544, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
 var player, player1;
 var platforms;
@@ -52,17 +53,27 @@ var stars;
 
 function preload() {
 	game.load.image('sky', 'assets/sky.png');
-    game.load.image('ground', 'assets/platform.png');
+    //game.load.image('ground', 'assets/platform.png');
+	game.load.image('ground', 'assets/ground.png');
+	game.load.image('back0', 'assets/mapa1_capafondo.png');
+	game.load.image('back1', 'assets/mapa1_capajuego.png');
     game.load.image('star', 'assets/star.png');
     game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
 }
 
 function create() {
+
+	var stats = 70;
+
 	//Cargamos las fisicas arcade para nuestro videojuego
 	game.physics.startSystem(Phaser.Physics.ARCADE);
 
 	//Añadimos el sprite de fondo
-	game.add.sprite(0, 0, 'sky');
+	//game.add.sprite(0, 0, 'sky');
+	var back0 = game.add.sprite(0, 0, 'back0');
+	back0.scale.setTo(2,2);
+	var back1 = game.add.sprite(0, 0, 'back1');
+	back1.scale.setTo(2,2);
 
 	//Creamos el grupo de plataformas
     platforms = game.add.group();
@@ -71,24 +82,47 @@ function create() {
     platforms.enableBody = true;
 
     // Creamos la variable ground que contendrá las plataformas.
-    var ground = platforms.create(0, game.world.height - 64, 'ground');
+    var ground = platforms.create(0, game.world.height - 80, 'ground');
 
     // Escalamos el original
-    ground.scale.setTo(2, 2);
+    ground.scale.setTo(968, 80);
 
     // Hacemos que no se pueda mover para que no caiga y se mantenga fijo
     ground.body.immovable = true;
 
-    //  Creamos dos plataformas
-    var ledge = platforms.create(400, 400, 'ground');
-    ledge.body.immovable = true;
 
-    var ledge2 = platforms.create(-150, 250, 'ground');
+    //  Creamos 7 plataformas
+    var ledge = platforms.create(0, 122, 'ground');
+    ledge.body.immovable = true;
+	ledge.scale.setTo(132,10);
+
+    var ledge2 = platforms.create(0, 356, 'ground');
     ledge2.body.immovable = true;
+	ledge2.scale.setTo(238,10);
+
+	var ledge3 = platforms.create(236, 226, 'ground');
+    ledge3.body.immovable = true;
+	ledge3.scale.setTo(496,10);
+
+	var ledge4 = platforms.create(game.world.width - 132, 122, 'ground');
+    ledge4.body.immovable = true;
+	ledge4.scale.setTo(132,10);
+
+	var ledge5 = platforms.create(game.world.width - 238, 356, 'ground');
+    ledge5.body.immovable = true;
+	ledge5.scale.setTo(238,10);
+
+	var ledge6 = platforms.create(478, 0, 'ground');
+    ledge6.body.immovable = true;
+	ledge6.scale.setTo(12,122);
+
+	var ledge7 = platforms.create(478, game.world.height - (122 + stats), 'ground');
+    ledge7.body.immovable = true;
+	ledge7.scale.setTo(12,122);
 
     //Creamos al personaje jugador
-    player = game.add.sprite(32, game.world.height - 150, 'dude');
-	player1 = game.add.sprite(64, game.world.height - 450, 'dude');
+    player = game.add.sprite(32, game.world.height - 200, 'dude');
+	player1 = game.add.sprite(64, game.world.height - 400, 'dude');
 
     //Creamos las fisicas del personaje
     game.physics.arcade.enable(player);
@@ -114,6 +148,7 @@ function create() {
      cursors = game.input.keyboard.createCursorKeys();
 	 keyA = game.input.keyboard.addKey(Phaser.Keyboard.A);
 	 keyD = game.input.keyboard.addKey(Phaser.Keyboard.D);
+	 
 }
 
 function update() {
