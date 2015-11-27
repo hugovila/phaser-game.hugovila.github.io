@@ -20,9 +20,22 @@ var player;
 var platforms;
 var cursors;
 var stars;
-var currentSpeed = 0;
-var vidaRecogida = false;
 
+
+//vidas
+var vidaRecogida = false;
+var life;
+
+//pollos
+var pollosRecogido = false;
+var pollo;
+
+//Tiro
+var bullets;
+var bullet;
+var bulletTime = 0;
+
+var direccion = 0;
 
 function preload() {
 
@@ -30,15 +43,22 @@ function preload() {
  	game.load.image('sky', 'assets/sky.png');
     game.load.image('ground', 'assets/platform.png');
     game.load.image('star', 'assets/star.png');
-    game.load.image('vida', 'assets/firstaid.png');
+    game.load.image('vida', 'assets/firstaid.png')
     game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
+    game.load.image('pollos', 'assets/diamond.png')
+	game.load.image('bala','assets/bala.png');
 
 }
 
 function create() {
 
+    //Genera vidas
+    game.time.events.repeat(5000, 10, createLife, this);
 
- 	game.time.events.repeat(Phaser.Timer.SECOND * 2, 10, createLife, this);
+    //Genera pollos
+    game.time.events.repeat(5000, 10, createPollo, this);
+
+    
 
 	//Cargamos las fisicas arcade para nuestro videojuego
 	game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -48,8 +68,6 @@ function create() {
 
 	//Creamos el grupo de plataformas
     platforms = game.add.group();
-
-    
 
     //Le damos propiedades de cuerpo al grupo plataformas
     platforms.enableBody = true;
@@ -72,10 +90,11 @@ function create() {
 
     //Creamos al personaje jugador
     player = game.add.sprite(32, game.world.height - 150, 'dude');
-   
-    // Caracteristicas fisicas del personaje
-    game.physics.enable(player, Phaser.Physics.ARCADE);
 
+    //Creamos las fisicas del personaje
+    game.physics.arcade.enable(player);
+
+    // Caracteristicas fisicas del personaje
     player.body.bounce.y = 0.2;
     player.body.gravity.y = 300;
     player.body.collideWorldBounds = true;
@@ -87,48 +106,72 @@ function create() {
     //Controles por teclado
      cursors = game.input.keyboard.createCursorKeys();
 
+	 game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
+	 /* Balas */
+	
+	bullets = game.add.group();
+    bullets.enableBody = true;
+    bullets.physicsBodyType = Phaser.Physics.ARCADE;
+	 bullets.createMultiple(30, 'bala');
+    /*for (var i = 0; i < 20; i++)
+    {
+        var b = bullets.create(0, 0, 'bala');
+        b.name = 'bala' + i;
+        b.exists = false;
+        b.visible = false;
+        b.checkWorldBounds = true;
+        b.events.onOutOfBounds.add(resetBullet, this);
+    }*/
 }
 
 function update() {
 
-
-
 	 //  Colisiones de jugador y plataformas
     game.physics.arcade.collide(player, platforms);
+    game.physics.arcade.collide(life, platforms);
+    game.physics.arcade.collide(pollo, platforms);
     
+
+	player.body.checkCollision.up = false;
+	//game.physics.arcade.collide(bullets, platforms);
+	
+	 game.physics.arcade.collide(bullets, platforms,destroyBullet);
+
+    game.physics.arcade.overlap(player, life, collectLife, null, this);
+    game.physics.arcade.overlap(player, pollo, collectPollo, null, this);
+
 
     //  Player en estatico
     player.body.velocity.x = 0;
 
-     
-
-   
-//Movimiento del personaje
     if (cursors.left.isDown)
     {
-    	
-        //  Movemos a la izquier
+        //  Movemos a la izquierda
         player.body.velocity.x = -150;
+		
+		//AÑADIR
+		direccion = -1;
 
         player.animations.play('left');
     }
     else if (cursors.right.isDown)
     {
-    
         //  Movemos a la drecha
         player.body.velocity.x = 150;
+		
+		//AÑADIR
+		direccion = 1;
 
         player.animations.play('right');
     }
     else
     {
-
-    
-
         //  Estatico
         player.animations.stop();
-
-
+		
+		//AÑADIR
+		direccion = 0;
+		
         player.frame = 4;
     }
     
@@ -137,33 +180,96 @@ function update() {
     {
         player.body.velocity.y = -350;
     }
-
-
+	
+	// Disparar
+	if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) && direccion != 0)
+    {
+        fireBullet();
+    }
 }
 
+	function destroyBullet(bullet,platforms) {
+		bullet.kill();
+	}
 
+	//metodo de disparo
+	function fireBullet () {
+
+    if (game.time.now > bulletTime)
+    {
+        bullet = bullets.getFirstExists(false);
+
+        if (bullet)
+        {
+            bullet.reset(player.x + 6, player.y - 8);
+			if (direccion == -1)
+				bullet.body.velocity.x = -300;
+			else if (direccion == 1)
+				bullet.body.velocity.x = 300;
+            bulletTime = game.time.now + 150;
+        }
+    }
 }
 
+	
+	
+	//  Called if the bullet goes out of the screen
+function resetBullet (bullet) {
+
+    bullet.kill();
+
+}
 
 function createLife() {
 
-    //  A bouncey ball sprite just to visually see what's going on.
-    if(vidaRecogida == False){
-    var vidas = game.add.sprite(game.world.randomX, 0, 'vida');
+   
+    if(vidaRecogida == false){
+    life = game.add.sprite(game.world.width/2, game.world.height/2, 'vida');
 
-    game.physics.enable(vidas, Phaser.Physics.ARCADE);
+    game.physics.enable(life, Phaser.Physics.ARCADE);
 
-    vidas.body.bounce.y = 0.9;
-    vidas.body.collideWorldBounds = true;
+    life.body.bounce.y = 0.9;
+    life.body.gravity.y = 150;
+    life.body.collideWorldBounds = true;
+
     vidaRecogida = true;
 }
 
-function collectLife (player, vidas) {
+
+
+}
+
+function collectLife (player, life) {
     
     // Removes the star from the screen
-    vidas.kill();
+    life.kill();
 
-    vidaRecogida == True ;
+    vidaRecogida = false;
+
+}
+
+function createPollo() {
+
+   
+    if(pollosRecogido == false){
+    pollo = game.add.sprite(game.world.width/2 - 70, game.world.height/2 - 70 , 'pollos');
+
+    game.physics.enable(pollo, Phaser.Physics.ARCADE);
+
+    pollo.body.bounce.y = 0.9;
+    pollo.body.gravity.y = 150;
+    pollo.body.collideWorldBounds = true;
+
+    pollosRecogido = true;
+}
+}
+
+function collectPollo (player, pollo) {
+    
+   
+    pollo.kill();
+
+    pollosRecogido = false;
 
 }
 
