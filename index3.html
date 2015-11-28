@@ -7,18 +7,23 @@
     <style type="text/css">
         body {
             margin: 0;
+			padding-top: 4%;
 			background-color: #313941;
         }
+
+		}
 		#game {
 			/*min-height: 10em;*/
 			min-height: 2em;
    			position: relative;
+
 		}
 		.wrapper {
 			margin: 0;
    			position: absolute;
    			top: 50%;
    			transform: translate(0, -50%);
+
 		}
 
 		canvas {
@@ -45,8 +50,10 @@
 
 var game = new Phaser.Game(968,544, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
+var statePlayerHead = [], statePlayerLife = [], statePlayerVictories = [], statePlayerPower = [],
+	statePlayerBarLife = [], statePlayerBarVictories = [], statePlayerBarPower = [];
 var player, player1;
-var platforms;
+var platforms, stats;
 var cursors;
 var keyA, keyD;
 var stars;
@@ -58,12 +65,18 @@ function preload() {
 	game.load.image('back0', 'assets/mapa1_capafondo.png');
 	game.load.image('back1', 'assets/mapa1_capajuego.png');
     game.load.image('star', 'assets/star.png');
+	game.load.image('statsBackground', 'assets/statsBackground_.png');
     game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
+	game.load.spritesheet('heads', 'assets/heads3.png', 35, 35);
+	game.load.spritesheet('iconsStats', 'assets/miniicons.png', 5, 5);
+	game.load.spritesheet('iconsPower', 'assets/bars.png', 88, 5);
 }
 
 function create() {
 
 	var stats = 70;
+	var statsWidth = game.world.width, statsHeight = 70;
+	var statsPosX, statsPosY;
 
 	//Cargamos las fisicas arcade para nuestro videojuego
 	game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -74,6 +87,76 @@ function create() {
 	back0.scale.setTo(2,2);
 	var back1 = game.add.sprite(0, 0, 'back1');
 	back1.scale.setTo(2,2);
+
+
+	/** Estado del juego **/
+
+	statsBoard = game.add.group();
+
+	var stats = statsBoard.create(0, game.world.height - statsHeight, 'statsBackground');
+	stats.scale.setTo(game.world.width, statsHeight);
+
+
+	/* Heads */
+	function createHeads() {
+		for (var playerNum = 0; playerNum < 4; playerNum++) {
+			statePlayerHead[playerNum] = game.add.sprite(10 + (242 * playerNum), game.world.height - statsHeight + 5, 'heads');
+			statePlayerHead[playerNum].animations.add('live', [playerNum], 10, true);
+			statePlayerHead[playerNum].animations.add('dead', [4], 10, true);
+			statePlayerHead[playerNum].animations.add('init', [playerNum, 4], 10, true);
+
+			//statePlayerHead[playerState].animations.play('init');
+			statePlayerHead[playerNum].animations.play('live');
+		}
+	}
+
+	function createBars() {
+	/* Stats animations life, victories, power */
+		for (var playerNum = 0; playerNum < 4; playerNum++) {
+			//// life
+			statePlayerLife[playerNum] = game.add.sprite((10 + 35 + 5) + (242 * playerNum), game.world.height - statsHeight + 10, 'iconsStats');
+			statePlayerLife[playerNum].animations.add('life', [0], 10, true);
+
+			statePlayerLife[playerNum].animations.play('life');
+
+			// Life bare
+			statePlayerBarLife[playerNum] = game.add.sprite((10 + 35 + 5 + 10) + (242 * playerNum), game.world.height - statsHeight + 10, 'iconsPower');
+			statePlayerBarLife[playerNum].animations.add('powerlife', [0], 10, true);
+
+			statePlayerBarLife[playerNum].animations.play('powerlife');
+
+
+			//// Power
+			statePlayerPower[playerNum] = game.add.sprite((10 + 35 + 5) + (242 * playerNum), game.world.height - statsHeight + 20, 'iconsStats');
+			statePlayerPower[playerNum].animations.add('victory', [2], 10, true);
+
+			statePlayerPower[playerNum].animations.play('victory');
+
+			// Power bare
+			statePlayerBarPower[playerNum] = game.add.sprite((10 + 35 + 5 + 10) + (242 * playerNum), game.world.height - statsHeight + 10 + 10, 'iconsPower');
+			statePlayerBarPower[playerNum].animations.add('powerbar', [1], 10, true);
+
+			statePlayerBarPower[playerNum].animations.play('powerbar');
+
+
+			//// Victories
+			statePlayerVictories[playerNum] = game.add.sprite((10 + 35 + 5) + (242 * playerNum), game.world.height - statsHeight + 30, 'iconsStats');
+			statePlayerVictories[playerNum].animations.add('victory', [1], 10, true);
+
+			statePlayerVictories[playerNum].animations.play('victory');
+
+			// Victory bare
+			// statePlayerBarVictories[playerNum] = game.add.sprite((10 + 35 + 5 + 10) + (242 * playerNum), game.world.height - statsHeight + 10 + 10 + 10, 'iconsPower');
+			// statePlayerBarVictories[playerNum].animations.add('victorybar', [2], 10, true);
+			//
+			// statePlayerBarVictories[playerNum].animations.play('victorybar');
+
+		}
+	}
+
+	createHeads();
+	createBars();
+
 
 	//Creamos el grupo de plataformas
     platforms = game.add.group();
@@ -148,7 +231,7 @@ function create() {
      cursors = game.input.keyboard.createCursorKeys();
 	 keyA = game.input.keyboard.addKey(Phaser.Keyboard.A);
 	 keyD = game.input.keyboard.addKey(Phaser.Keyboard.D);
-	 
+
 }
 
 function update() {
@@ -209,6 +292,7 @@ function update() {
    {
 	   player.body.velocity.y = -350;
    }
+
 }
 
 </script>
