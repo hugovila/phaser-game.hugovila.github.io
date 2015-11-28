@@ -33,6 +33,7 @@ var cactus;
 var objetoRecogido = false;
 var velocityLeft = -150;
 var velocityRight = 150;
+var convertidoPollo = false;
 
 //pollos
 //var pollosRecogido = false;
@@ -284,12 +285,13 @@ function update() {
    }
 
 	// Disparar
-	if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) && direccion != 0)
+	if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) && direccion != 0 && convertidoPollo == false)
     {
         fireBullet();
+
     }
 
-    if (game.input.keyboard.isDown(Phaser.Keyboard.X)&& direccion != 0)
+    if (game.input.keyboard.isDown(Phaser.Keyboard.X)&& direccion != 0 && convertidoPollo == false)
     {
         fireBullet1();
     }
@@ -429,6 +431,7 @@ function collectPollo (player, pollo) {
     pollo.kill();
 
     objetoRecogido = false;
+    convertidoPollo = true;
     convertirPollos();
     game.time.events.add(Phaser.Timer.SECOND * 4, vueltaNormalidad, this);
 
@@ -489,7 +492,7 @@ function vueltaNormalidad() {
         player1.body.bounce.y = 0.2;
         player1.body.gravity.y = 300;
         
-        
+        convertidoPollo = false;
 
     }
   
@@ -498,8 +501,8 @@ function vueltaNormalidad() {
 
 function velocidadMaxima() {
 
-velocityLeft = -300;
-velocityRight = 300;
+velocityLeft = -500;
+velocityRight = 500;
 
 
 }
