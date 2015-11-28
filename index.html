@@ -378,9 +378,9 @@ function update() {
 	game.physics.arcade.collide(bullets2, platforms,destroyBullet2);
 	game.physics.arcade.collide(bullets3, platforms,destroyBullet3);
 	
-	game.physics.arcade.collide(bullets, player1,hitPlayer1);
-	game.physics.arcade.collide(bullets, player2,hitPlayer2);
-	game.physics.arcade.collide(bullets, player3,hitPlayer3);
+	game.physics.arcade.collide(bullets, players,hitPlayer1);
+	game.physics.arcade.collide(bullets, players,hitPlayer2);
+	game.physics.arcade.collide(bullets, players,hitPlayer3);
 	
     game.physics.arcade.collide(bullets1, players,hitPlayer);
 	game.physics.arcade.collide(bullets1, players,hitPlayer2);
