@@ -1,20 +1,57 @@
-<!doctype html> 
-<html lang="en"> 
-<head> 
+<!doctype html>
+<html lang="en">
+<head>
 	<meta charset="UTF-8" />
-	<title>GeekHubs Hackathon!!!!</title>
+	<title>Phaser - Making your first game, part 1</title>
     <script src="js/phaser.min.js"></script>
     <style type="text/css">
         body {
             margin: 0;
+			padding-top: 4%;
+			background-color: #313941;
         }
+
+		}
+		#game {
+			/*min-height: 10em;*/
+			min-height: 2em;
+   			position: relative;
+
+		}
+		.wrapper {
+			margin: 0;
+   			position: absolute;
+   			top: 50%;
+   			transform: translate(0, -50%);
+
+		}
+
+		canvas {
+
+			/*margin: 0;
+   			position: absolute;
+   			top: 50%;
+   			transform: translate(0, -50%);*/
+
+
+			margin-left: auto;
+    		margin-right: auto;
+    		width: 800px;
+
+
+		}
+
     </style>
 </head>
 <body>
-
+<div id="game">
+	<div class="wrapper">
 <script type="text/javascript">
 
 var game = new Phaser.Game(968,544, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+
+var statePlayerHead = [], statePlayerLife = [], statePlayerVictories = [], statePlayerPower = [],
+	statePlayerBarLife = [], statePlayerBarVictories = [], statePlayerBarPower = [];
 
 var players;
 var player, player1, player2, player3;
@@ -75,13 +112,81 @@ function preload() {
     game.load.spritesheet('objetos', 'assets/cactushologram.png', 38, 48);
     game.load.spritesheet('chicken', 'assets/gallina.png', 38, 48);
 	game.load.image('bala','assets/bola.png');
+	game.load.spritesheet('heads', 'assets/heads3.png', 35, 35);
+	game.load.spritesheet('iconsStats', 'assets/miniicons.png', 5, 5);
+	game.load.spritesheet('iconsPower', 'assets/bars.png', 88, 5);
+	game.load.image('statsBackground', 'assets/statsBackground.png');
 
 }
 
 function create() {
 
     var stats = 70;
+	var statsWidth = game.world.width, statsHeight = 70;
+	var statsPosX, statsPosY;
+	
+		/** Estado del juego **/
 
+	statsBoard = game.add.group();
+
+	var stats = statsBoard.create(0, game.world.height - statsHeight, 'statsBackground');
+	stats.scale.setTo(game.world.width, statsHeight);
+
+
+	/* Heads */
+	function createHeads() {
+		for (var playerNum = 0; playerNum < 4; playerNum++) {
+			statePlayerHead[playerNum] = game.add.sprite(10 + (242 * playerNum), game.world.height - statsHeight + 5, 'heads');
+			statePlayerHead[playerNum].animations.add('live', [playerNum], 10, true);
+			statePlayerHead[playerNum].animations.add('dead', [4], 10, true);
+			statePlayerHead[playerNum].animations.add('init', [playerNum, 4], 10, true);
+
+			//statePlayerHead[playerState].animations.play('init');
+			statePlayerHead[playerNum].animations.play('live');
+		}
+	}
+
+	function createBars() {
+	/* Stats animations life, victories, power */
+		for (var playerNum = 0; playerNum < 4; playerNum++) {
+			//// life
+			statePlayerLife[playerNum] = game.add.sprite((10 + 35 + 5) + (242 * playerNum), game.world.height - statsHeight + 10, 'iconsStats');
+			statePlayerLife[playerNum].animations.add('life', [0], 10, true);
+
+			statePlayerLife[playerNum].animations.play('life');
+
+			// Life bare
+			statePlayerBarLife[playerNum] = game.add.sprite((10 + 35 + 5 + 10) + (242 * playerNum), game.world.height - statsHeight + 10, 'iconsPower');
+			statePlayerBarLife[playerNum].animations.add('powerlife', [0], 10, true);
+
+			statePlayerBarLife[playerNum].animations.play('powerlife');
+
+
+			//// Power
+			statePlayerPower[playerNum] = game.add.sprite((10 + 35 + 5) + (242 * playerNum), game.world.height - statsHeight + 20, 'iconsStats');
+			statePlayerPower[playerNum].animations.add('victory', [2], 10, true);
+
+			statePlayerPower[playerNum].animations.play('victory');
+
+			// Power bare
+			statePlayerBarPower[playerNum] = game.add.sprite((10 + 35 + 5 + 10) + (242 * playerNum), game.world.height - statsHeight + 10 + 10, 'iconsPower');
+			statePlayerBarPower[playerNum].animations.add('powerbar', [1], 10, true);
+
+			statePlayerBarPower[playerNum].animations.play('powerbar');
+
+
+			//// Victories
+			statePlayerVictories[playerNum] = game.add.sprite((10 + 35 + 5) + (242 * playerNum), game.world.height - statsHeight + 30, 'iconsStats');
+			statePlayerVictories[playerNum].animations.add('victory', [1], 10, true);
+
+			statePlayerVictories[playerNum].animations.play('victory');
+
+		}
+	}
+
+	createHeads();
+	createBars();
+	
     //Genera vidas
     game.time.events.repeat(5000, 25, createObject, this);
 
