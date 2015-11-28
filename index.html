@@ -16,7 +16,8 @@
 
 var game = new Phaser.Game(968,544, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
-var player, player1;
+var players;
+var player, player1, player2, player3;
 var platforms;
 var objetosRandom;
 
@@ -54,6 +55,11 @@ var direccion1 = 1;
 var direccion2 = -1;
 var direccion3 = -1;
 
+var lifePlayer = 100;
+var lifePlayer1 = 100;
+var lifePlayer2 = 100;
+var lifePlayer3 = 100;
+
 function preload() {
 
 	//Cargamos los assets
@@ -90,6 +96,7 @@ function create() {
 
     //Creamos el grupo de plataformas
     platforms = game.add.group();
+	
 
     //Le damos propiedades de cuerpo al grupo plataformas
     platforms.enableBody = true;
@@ -135,12 +142,20 @@ function create() {
     var ledge7 = platforms.create(478, game.world.height - (122 + stats), 'ground');
     ledge7.body.immovable = true;
     ledge7.scale.setTo(12,122);
+	
+	//Creamos el grupo players
+	players = game.add.group();
 
     //Creamos al personaje jugador
     player = game.add.sprite(32, game.world.height - 200, 'soldiermodel3blue');
     player1 = game.add.sprite(64, game.world.height - 400, 'soldiermodel3red');
 	player2 = game.add.sprite(game.world.width - 64, game.world.height - 150, 'soldiermodel3green');
     player3 = game.add.sprite(game.world.width - 64, game.world.height - 300, 'soldiermodel3orange');
+	
+	players.add(player);
+	players.add(player1);
+	players.add(player2);
+	players.add(player3);
 
     //Creamos las fisicas del personaje
     game.physics.arcade.enable(player);
@@ -226,6 +241,11 @@ function update() {
     game.physics.arcade.collide(bullets1, platforms,destroyBullet1);
 	game.physics.arcade.collide(bullets2, platforms,destroyBullet2);
 	game.physics.arcade.collide(bullets3, platforms,destroyBullet3);
+	
+	game.physics.arcade.collide(bullets, players,destroyBullet);
+    game.physics.arcade.collide(bullets1, players,destroyBullet1);
+	game.physics.arcade.collide(bullets2, players,destroyBullet2);
+	game.physics.arcade.collide(bullets3, players,destroyBullet3);
 
     game.physics.arcade.overlap(player, life, collectLife, null, this);
     game.physics.arcade.overlap(player, pollo, collectPollo, null, this);
@@ -716,6 +736,17 @@ function fireBullet (n) {
 	break;
 	default:
 	break;
+	}
+}
+
+function hitPlayer(bullet_a, playerss){
+	bullet_a.kill();
+	
+	if (playerss.name == "player") {
+		lifePlayer -= 10;
+	}
+	else if (playerss.name == "player1") {
+		lifePlayer1 -= 10;
 	}
 }
 
