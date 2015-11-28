@@ -14,21 +14,26 @@
 
 <script type="text/javascript">
 
-var game = new Phaser.Game(800,600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+var game = new Phaser.Game(968,544, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
 var player, player1;
 var platforms;
+var objetosRandom;
+
 var cursors;
 var stars;
 var keyA, keyD, keyW , keyR;
 
 
 //vidas
-var vidaRecogida = false;
+//var vidaRecogida = false;
 var life;
+var cactus;
+
+var objetoRecogido = false;
 
 //pollos
-var pollosRecogido = false;
+//var pollosRecogido = false;
 var pollo;
 
 //Tiro
@@ -45,59 +50,99 @@ var direccion = 0;
 function preload() {
 
 	//Cargamos los assets
- 	game.load.image('sky', 'assets/sky.png');
-    game.load.image('ground', 'assets/platform.png');
+ 	
+    game.load.image('back0', 'assets/mapa1_capafondo.png');
+    game.load.image('back1', 'assets/mapa1_capajuego.png');
+    game.load.image('ground', 'assets/ground.png');
     game.load.image('star', 'assets/star.png');
     game.load.image('vida', 'assets/firstaid.png')
     game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
-    game.load.image('pollos', 'assets/diamond.png')
+    game.load.spritesheet('objetos', 'assets/cactushologram.png', 38, 48);
+    //game.load.image('pollos', 'assets/diamond.png')
 	game.load.image('bala','assets/bala.png');
 
 }
 
 function create() {
 
+    var stats = 70;
+
+
+
     //Genera vidas
-    game.time.events.repeat(5000, 10, createLife, this);
+    game.time.events.repeat(5000, 25, createObject, this);
 
     //Genera pollos
-    game.time.events.repeat(5000, 10, createPollo, this);
+    //game.time.events.repeat(5000, 10, createPollo, this);
 
 	//Cargamos las fisicas arcade para nuestro videojuego
 	game.physics.startSystem(Phaser.Physics.ARCADE);
 
-	//Añadimos el sprite de fondo
-	game.add.sprite(0, 0, 'sky');
+    //Añadimos el sprite de fondo
+    //game.add.sprite(0, 0, 'sky');
+    var back0 = game.add.sprite(0, 0, 'back0');
+    back0.scale.setTo(2,2);
+    var back1 = game.add.sprite(0, 0, 'back1');
+    back1.scale.setTo(2,2);
 
-	//Creamos el grupo de plataformas
+    //Creamos el grupo de plataformas
     platforms = game.add.group();
 
     //Le damos propiedades de cuerpo al grupo plataformas
     platforms.enableBody = true;
 
+    objetosRandom = game.add.group();
+
+    objetosRandom.enableBody = true;
     // Creamos la variable ground que contendrá las plataformas.
-    var ground = platforms.create(0, game.world.height - 64, 'ground');
+    var ground = platforms.create(0, game.world.height - 80, 'ground');
 
     // Escalamos el original
-    ground.scale.setTo(2, 2);
+    ground.scale.setTo(968, 80);
 
     // Hacemos que no se pueda mover para que no caiga y se mantenga fijo
     ground.body.immovable = true;
 
-    //  Creamos dos plataformas
-    var ledge = platforms.create(400, 400, 'ground');
+
+    //  Creamos 7 plataformas
+    var ledge = platforms.create(0, 122, 'ground');
     ledge.body.immovable = true;
+    ledge.scale.setTo(132,10);
 
-    var ledge2 = platforms.create(-150, 250, 'ground');
+    var ledge2 = platforms.create(0, 356, 'ground');
     ledge2.body.immovable = true;
+    ledge2.scale.setTo(238,10);
 
-   //Creamos al personaje jugador
-    player = game.add.sprite(32, game.world.height - 150, 'dude');
-    player1 = game.add.sprite(64, game.world.height - 450, 'dude');
+    var ledge3 = platforms.create(236, 226, 'ground');
+    ledge3.body.immovable = true;
+    ledge3.scale.setTo(496,10);
+
+    var ledge4 = platforms.create(game.world.width - 132, 122, 'ground');
+    ledge4.body.immovable = true;
+    ledge4.scale.setTo(132,10);
+
+    var ledge5 = platforms.create(game.world.width - 238, 356, 'ground');
+    ledge5.body.immovable = true;
+    ledge5.scale.setTo(238,10);
+
+    var ledge6 = platforms.create(478, 0, 'ground');
+    ledge6.body.immovable = true;
+    ledge6.scale.setTo(12,122);
+
+    var ledge7 = platforms.create(478, game.world.height - (122 + stats), 'ground');
+    ledge7.body.immovable = true;
+    ledge7.scale.setTo(12,122);
+
+    //Creamos al personaje jugador
+    player = game.add.sprite(32, game.world.height - 200, 'dude');
+    player1 = game.add.sprite(64, game.world.height - 400, 'dude');
 
     //Creamos las fisicas del personaje
     game.physics.arcade.enable(player);
     game.physics.arcade.enable(player1);
+    
+
+ 
 
     // Caracteristicas fisicas del personaje
     player.body.bounce.y = 0.2;
@@ -115,6 +160,7 @@ function create() {
     player1.animations.add('left', [0, 1, 2, 3], 10, true);
     player1.animations.add('right', [5, 6, 7, 8], 10, true);
 
+    
 
     //Controles por teclado
      cursors = game.input.keyboard.createCursorKeys();
@@ -158,8 +204,10 @@ function update() {
 
     game.physics.arcade.overlap(player, life, collectLife, null, this);
     game.physics.arcade.overlap(player, pollo, collectPollo, null, this);
+    game.physics.arcade.overlap(player, cactus, collectCactus, null, this);
     game.physics.arcade.overlap(player1, life, collectLife, null, this);
     game.physics.arcade.overlap(player1, pollo, collectPollo, null, this);
+    game.physics.arcade.overlap(player1, cactus, collectCactus, null, this);
 
 
 
@@ -308,56 +356,85 @@ function resetBullet1 (bullet1) {
 
 }
 
-function createLife() {
-
+function createObject() {
+    var crearObjeto = Math.floor(Math.random()*3);
    
-    if(vidaRecogida == false){
-    life = game.add.sprite(game.world.width/2, game.world.height/2, 'vida');
+    if(objetoRecogido == false){
+    switch(crearObjeto){
+    case 0:
+    life = objetosRandom.create(game.world.width/2 - 40, game.world.height/2 - 125, 'objetos');
+    life.animations.add('hologramaeffect', [10, 11, 12, 13, 14, 15, 16, 17, 18, 19], (Math.random()*20) + 5, true);
+    life.animations.play('hologramaeffect');
+    life.scale.setTo(2,2);
+    break;
+    case 1:
+    
+    pollo = objetosRandom.create(game.world.width/2 - 40, game.world.height/2 - 125, 'objetos');
+    pollo.animations.add('hologramaeffect2', [30, 31, 32, 33, 34, 35, 36, 37, 38, 39], (Math.random()*20) + 5, true);
+    pollo.animations.play('hologramaeffect2');
+    pollo.scale.setTo(2,2);
+    break;
+    case 2:
+    
+    cactus = objetosRandom.create(game.world.width/2 - 40, game.world.height/2 - 125, 'objetos');
+    cactus.animations.add('hologramaeffect3', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], (Math.random()*20) + 5, true);
+    cactus.animations.play('hologramaeffect3');
+    cactus.scale.setTo(2,2);
+    break;
 
-    game.physics.enable(life, Phaser.Physics.ARCADE);
+    default : break;
 
-    life.body.bounce.y = 0.9;
-    life.body.gravity.y = 150;
-    life.body.collideWorldBounds = true;
+}
+objetoRecogido = true;
+game.physics.arcade.enable(objetosRandom);
 
-    vidaRecogida = true;
+
+
+
+}
 }
 
-
-
-}
 
 function collectLife (player, life) {
     
     // Removes the star from the screen
     life.kill();
 
-    vidaRecogida = false;
+    objetoRecogido = false;
 
 }
 
-function createPollo() {
+/*function createPollo() {
 
    
     if(pollosRecogido == false){
     pollo = game.add.sprite(game.world.width/2 - 70, game.world.height/2 - 70 , 'pollos');
 
-    game.physics.enable(pollo, Phaser.Physics.ARCADE);
+    
 
     pollo.body.bounce.y = 0.9;
     pollo.body.gravity.y = 150;
     pollo.body.collideWorldBounds = true;
 
     pollosRecogido = true;
-}
-}
+}*/
+
 
 function collectPollo (player, pollo) {
     
    
     pollo.kill();
 
-    pollosRecogido = false;
+    objetoRecogido = false;
+
+}
+
+function collectCactus (player, cactus) {
+    
+   
+    cactus.kill();
+
+    objetoRecogido = false;
 
 }
 
