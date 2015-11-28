@@ -57,17 +57,13 @@ var bulletTime = 0;
 
 var direccion = 1;
 
-var apuntando = false;
-var abajo = false;
-var arriba = false;
-
 function preload() {
 
 	//Cargamos los assets
  	game.load.image('fondo', 'assets/sky.png');
     game.load.image('ground', 'assets/platform.png');
     game.load.image('star', 'assets/star.png');
-    game.load.spritesheet('monigote', 'assets/monigoteLados.png', 38, 48);
+    game.load.spritesheet('soldierblue2', 'assets/soldierblue2.png', 38, 48);
 	game.load.image('bala','assets/bala.png');
 
 }
@@ -102,7 +98,7 @@ function create() {
     ledge.body.immovable = true;
 
     //Creamos al personaje jugador
-    player = game.add.sprite(32, game.world.height - 150, 'monigote');
+    player = game.add.sprite(32, game.world.height - 150, 'soldierblue2');
 
     //Creamos las fisicas del personaje
     game.physics.arcade.enable(player);
@@ -113,14 +109,18 @@ function create() {
     player.body.collideWorldBounds = true;
 
     //  Animaciones.
-    player.animations.add('left', [17, 19, 21, 23,25,27], 10, true);
-    player.animations.add('right', [16,18,20,22,24,26], 10, true);
+    player.animations.add('left', [10,11,12,13], 10, true);
+    player.animations.add('right', [6,7,8,9], 10, true);
 
     //Controles por teclado
      cursors = game.input.keyboard.createCursorKeys();
 
 	 game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
-	 game.input.keyboard.addKeyCapture([ Phaser.Keyboard.G ]);
+	 
+	 game.input.keyboard.addKeyCapture([ Phaser.Keyboard.W ]);
+	 game.input.keyboard.addKeyCapture([ Phaser.Keyboard.A ]);
+	 game.input.keyboard.addKeyCapture([ Phaser.Keyboard.S ]);
+	 game.input.keyboard.addKeyCapture([ Phaser.Keyboard.D ]);
 	 /* Balas */
 	
 	bullets = game.add.group();
@@ -139,99 +139,87 @@ function update() {
     //  Player en estatico
     player.body.velocity.x = 0;
 	
-	if (game.input.keyboard.isDown(Phaser.Keyboard.G)) {
-		apuntando = true;
+	//AGACHADO
+	if ((game.input.keyboard.isDown(Phaser.Keyboard.S) && player.body.touching.down)){
+			player.animations.stop();
+			//IZQUIERDA-AGACHADO
+			if (game.input.keyboard.isDown(Phaser.Keyboard.A) || direccion == -1){
+				player.frame = 15;
+			}
+			//DERECHA-AGACHADO
+			else if (game.input.keyboard.isDown(Phaser.Keyboard.D) || direccion == 1){
+				player.frame = 14;
+			}
 	}
-	else {
-	apuntando = false;
-	abajo = false;
-	arriba = false;
-	}
-		
-		
-	if (cursors.down.isDown && player.body.touching.down) {
-		abajo = true;
-		arriba = false;
-		if (direccion == 1) {
-			if(apuntando && cursors.right.isDown && cursors.up.isDown)
-				player.frame = 30;
-			else if (apuntando && cursors.right.isDown && cursors.down.isDown)
-				player.frame = 32;
-			else
-				player.frame = 28;
-		}
-			
-		else if (direccion == -1)
-			if(apuntando && cursors.left.isDown && cursors.up.isDown)
-				player.frame = 31;
-			else if (apuntando && cursors.left.isDown && cursors.down.isDown)
-				player.frame = 33;
-			else
-				player.frame = 29;
+	//SALTO
+	else if (!player.body.touching.down) {
+	
 		player.animations.stop();
-	}
-	else if (!abajo) {
-	if (!player.body.touching.down)
-    {
-		player.animations.stop();
-		if (cursors.right.isDown) {
-			player.body.velocity.x = 150;
-			player.frame = 8;
-			direccion = 1;
+		
+		//APUNTAR HACIA ARRIBA
+		if (game.input.keyboard.isDown(Phaser.Keyboard.W) && !(game.input.keyboard.isDown(Phaser.Keyboard.A) || game.input.keyboard.isDown(Phaser.Keyboard.D))) {
+			player.frame = 2;
+			direccion = 2;
 		}
-		else if (cursors.left.isDown) {
+		//APUNTAR HACIA ABAJO
+		else if (game.input.keyboard.isDown(Phaser.Keyboard.S) && !(game.input.keyboard.isDown(Phaser.Keyboard.A) || game.input.keyboard.isDown(Phaser.Keyboard.D))) {
+			player.frame = 3;
+			direccion = 3;
+		}
+		//SALTO IZQUIERDA
+		else if (game.input.keyboard.isDown(Phaser.Keyboard.A)){
 			player.body.velocity.x = -150;
-			player.frame = 9;
 			direccion = -1;
+			player.frame = 5;
 		}
-			
+		//SALTO DERECHA
+		else if (game.input.keyboard.isDown(Phaser.Keyboard.D)){
+			player.body.velocity.x = 150;
+			direccion = 1;
+			player.frame = 4;
+		}
     }
-    else if (cursors.left.isDown && apuntando == false)
-    {
-        //  Movemos a la izquierda
-        player.body.velocity.x = -150;
-		
-		//AÑADIR
-		direccion = -1;
-
-        player.animations.play('left');
-    }
-    else if (cursors.right.isDown && apuntando == false)
-    {
-        //  Movemos a la derecha
-        player.body.velocity.x = 150;
-		
-		//AÑADIR
-		direccion = 1;
-
-        player.animations.play('right');
-    }
-    else
-    {
-        //  Estatico
-        player.animations.stop();
-		if (direccion == 1)
-			player.frame = 0;
-		else if (direccion == -1)
-			player.frame = 1;
-		else 
-			direccion = 0;
-    }
+	else {
+		//MOVIMIENTO A LA IZQUIERDA
+		if (game.input.keyboard.isDown(Phaser.Keyboard.A))
+		{
+			//Movemos a la izquierda
+			player.body.velocity.x = -150;
+			direccion = -1;
+			player.animations.play('left');
+		}
+		//MOVIMIENTO A LA DERECHA
+		else if (game.input.keyboard.isDown(Phaser.Keyboard.D))
+		{
+			//Movemos a la derecha
+			player.body.velocity.x = 150;
+			direccion = 1;
+			player.animations.play('right');
+		}
+		else
+		{
+			//  PERSONAJE QUIETO
+			player.animations.stop();
+			if (direccion == 1)
+				player.frame = 0;
+			else (direccion == -1)
+				player.frame = 1;
+		}
 	}
-	
-	
-    //  Permitimos el salto
-	if (cursors.up.isDown && player.body.touching.down && !apuntando)
+	//SALTO
+	if (game.input.keyboard.isDown(Phaser.Keyboard.W) && player.body.touching.down)
     {
         player.body.velocity.y = -350;
 	}
-	// Disparar
-	if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) && direccion != 0)
+	
+	// DISPARO
+	if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR))
     {
         fireBullet();
     }
 }
-
+	
+	// PARA LA COLISION ENTRE UNA BALA Y UNA PLATAFORMA
 	function destroyBullet(bullet,platforms) {
 		bullet.kill();
 	}
@@ -250,6 +238,11 @@ function update() {
 				bullet.body.velocity.x = -300;
 			else if (direccion == 1)
 				bullet.body.velocity.x = 300;
+			else if (direccion == 2)
+				bullet.body.velocity.y = -300;
+			else if (direccion == 3)
+				bullet.body.velocity.y = 300;
+				
             bulletTime = game.time.now + 150;
         }
     }
