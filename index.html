@@ -48,10 +48,12 @@
 	<div class="wrapper">
 <script type="text/javascript">
 
-var game = new Phaser.Game(968,544, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+var game = new Phaser.Game(968,544, Phaser.AUTO, '', { preload: preload, create: create, update: update },false,false);
 
 var statePlayerHead = [], statePlayerLife = [], statePlayerVictories = [], statePlayerPower = [],
 	statePlayerBarLife = [], statePlayerBarVictories = [], statePlayerBarPower = [];
+
+var healthbar = [];
 
 var players;
 var player, player1, player2, player3;
@@ -97,6 +99,13 @@ var lifePlayer1 = 100;
 var lifePlayer2 = 100;
 var lifePlayer3 = 100;
 
+var playerIsDead = false;
+var playerIsDead1 = false;
+var playerIsDead2 = false;
+var playerIsDead3 = false;
+
+var healthB, healthB1, healthB2, healthB3;
+
 function preload() {
 
 	//Cargamos los assets
@@ -116,6 +125,7 @@ function preload() {
 	game.load.spritesheet('iconsStats', 'assets/miniicons.png', 5, 5);
 	game.load.spritesheet('iconsPower', 'assets/bars.png', 88, 5);
 	game.load.image('statsBackground', 'assets/statsBackground.png');
+	game.load.image('barLife', 'assets/barLife.png');
 
 }
 
@@ -129,10 +139,6 @@ function create() {
 
 	statsBoard = game.add.group();
 
-	var stats = statsBoard.create(0, game.world.height - statsHeight, 'statsBackground');
-	stats.scale.setTo(game.world.width, statsHeight);
-
-
 	/* Heads */
 	function createHeads() {
 		for (var playerNum = 0; playerNum < 4; playerNum++) {
@@ -145,6 +151,11 @@ function create() {
 			statePlayerHead[playerNum].animations.play('live');
 		}
 	}
+	
+	healthB = statsBoard.create((10 + 35 + 5 + 10) + (242 * 0), game.world.height - statsHeight + 10, 'barLife');
+	healthB1 = statsBoard.create((10 + 35 + 5 + 10) + (242 * 1), game.world.height - statsHeight + 10, 'barLife');
+	healthB2 = statsBoard.create((10 + 35 + 5 + 10) + (242 * 2), game.world.height - statsHeight + 10, 'barLife');
+	healthB3 = statsBoard.create((10 + 35 + 5 + 10) + (242 * 3), game.world.height - statsHeight + 10, 'barLife');
 
 	function createBars() {
 	/* Stats animations life, victories, power */
@@ -160,6 +171,8 @@ function create() {
 			statePlayerBarLife[playerNum].animations.add('powerlife', [0], 10, true);
 
 			statePlayerBarLife[playerNum].animations.play('powerlife');
+			
+			
 
 
 			//// Power
@@ -347,10 +360,21 @@ function update() {
 	game.physics.arcade.collide(bullets2, platforms,destroyBullet2);
 	game.physics.arcade.collide(bullets3, platforms,destroyBullet3);
 	
-	game.physics.arcade.collide(bullets, players,destroyBullet);
-    game.physics.arcade.collide(bullets1, players,destroyBullet1);
-	game.physics.arcade.collide(bullets2, players,destroyBullet2);
-	game.physics.arcade.collide(bullets3, players,destroyBullet3);
+	game.physics.arcade.overlap(bullets, player1,hitPlayer1);
+	game.physics.arcade.overlap(bullets, player2,hitPlayer2);
+	game.physics.arcade.overlap(bullets, player3,hitPlayer3);
+	
+    game.physics.arcade.collide(bullets1, players,hitPlayer);
+	game.physics.arcade.collide(bullets1, players,hitPlayer2);
+	game.physics.arcade.collide(bullets1, players,hitPlayer3);
+	
+	game.physics.arcade.collide(bullets2, players,hitPlayer);
+	game.physics.arcade.collide(bullets2, players,hitPlayer1);
+	game.physics.arcade.collide(bullets2, players,hitPlayer3);
+	
+	game.physics.arcade.collide(bullets3, players,hitPlayer);
+	game.physics.arcade.collide(bullets3, players,hitPlayer1);
+	game.physics.arcade.collide(bullets3, players,hitPlayer2);
 
     game.physics.arcade.overlap(player, life, collectLife, null, this);
     game.physics.arcade.overlap(player, pollo, collectPollo, null, this);
@@ -845,14 +869,53 @@ function fireBullet (n) {
 }
 
 function hitPlayer(bullet_a, playerss){
+
+	bullet_a.kill();
+	if (lifePlayer > 0) {
+		lifePlayer -= 10;
+		healthB.scale.x = lifePlayer/100;
+	}
+	/*else {
+		playerss.kill();
+	}*/
+	
+	
+}
+function hitPlayer1(bullet_a, playerss){
+
 	bullet_a.kill();
 	
-	if (playerss.name == "player") {
-		lifePlayer -= 10;
-	}
-	else if (playerss.name == "player1") {
+	if  (lifePlayer1 > 0) {
 		lifePlayer1 -= 10;
+		healthB1.scale.x = lifePlayer1/100;
 	}
+	/*else {
+		playerss.kill();
+	}*/
+	
+}
+function hitPlayer2(bullet_a, playerss){
+
+	bullet_a.kill();
+	if  (lifePlayer2 > 0) {
+		lifePlayer2 -= 10;
+		healthB2.scale.x = lifePlayer2/100;
+	}
+	/*else 
+		playerss.kill();*/
+	
+}
+function hitPlayer3(bullet_a, playerss){
+
+	bullet_a.kill();
+	
+	if  (lifePlayer3 > 0) {
+		lifePlayer3 -= 10;
+		healthB3.scale.x = lifePlayer3/100;
+	}
+	/*else
+		playerss.kill();*/
+	
 }
 
 function createObject() {
