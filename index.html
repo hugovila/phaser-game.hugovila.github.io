@@ -911,9 +911,9 @@ function hitPlayer(bullet_a, playerss){
 		lifePlayer -= 10;
 		healthB.scale.x = lifePlayer/100;
 	}
-	/*else {
+	else {
 		playerss.kill();
-	}*/
+	}
 	
 	
 }
@@ -925,9 +925,9 @@ function hitPlayer1(bullet_a, playerss){
 		lifePlayer1 -= 10;
 		healthB1.scale.x = lifePlayer1/100;
 	}
-	/*else {
+	else {
 		playerss.kill();
-	}*/
+	}
 	
 }
 function hitPlayer2(bullet_a, playerss){
@@ -1020,7 +1020,7 @@ function collectPollo (player, pollo) {
 function collectCactus (player, cactus) {
     cactus.kill();
     velocidadMaxima();
-    game.time.events.add(Phaser.Timer.SECOND * 4, velocidadNormal, this);
+    game.time.events.add(Phaser.Timer.SECOND * 10, velocidadNormal, this);
     objetoRecogido = false;
 	
 	if(music.isPlaying) {
