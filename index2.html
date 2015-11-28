@@ -60,11 +60,11 @@ var direccion = 1;
 function preload() {
 
 	//Cargamos los assets
- 	game.load.image('fondo', 'assets/sky.png');
+ 	//game.load.image('fondo', 'assets/sky.png');
     game.load.image('ground', 'assets/platform.png');
     game.load.image('star', 'assets/star.png');
     game.load.spritesheet('soldierblue2', 'assets/soldierblue2.png', 38, 48);
-	game.load.image('bala','assets/bala.png');
+	game.load.image('bala','assets/bola.png');
 
 }
 
@@ -73,7 +73,7 @@ function create() {
 	game.physics.startSystem(Phaser.Physics.ARCADE);
 
 	//Añadimos el sprite de fondo
-	game.add.sprite(0, 0, 'fondo');
+	//game.add.sprite(0, 0, 'fondo');
 
 	//Creamos el grupo de plataformas
     platforms = game.add.group();
@@ -126,7 +126,7 @@ function create() {
 	bullets = game.add.group();
     bullets.enableBody = true;
     bullets.physicsBodyType = Phaser.Physics.ARCADE;
-	bullets.createMultiple(30, 'bala');
+	bullets.createMultiple(300, 'bala');
 }
 
 function update() {
@@ -202,7 +202,7 @@ function update() {
 			player.animations.stop();
 			if (direccion == 1)
 				player.frame = 0;
-			else (direccion == -1)
+			else if(direccion == -1)
 				player.frame = 1;
 		}
 	}
@@ -233,17 +233,24 @@ function update() {
 
         if (bullet)
         {
-            bullet.reset(player.x + 6, player.y - 8);
-			if (direccion == -1)
-				bullet.body.velocity.x = -300;
-			else if (direccion == 1)
-				bullet.body.velocity.x = 300;
-			else if (direccion == 2)
-				bullet.body.velocity.y = -300;
-			else if (direccion == 3)
-				bullet.body.velocity.y = 300;
+			if (direccion == -1) {
+				bullet.reset(player.x, player.y + 5);
+				bullet.body.velocity.x = -600;
+			}
+			else if (direccion == 1) {
+				bullet.reset(player.x + 38, player.y + 5);
+				bullet.body.velocity.x = 600;
+			}
+			else if (direccion == 2) {
+				bullet.reset(player.x + 19, player.y);
+				bullet.body.velocity.y = -600;
+			}
+			else if (direccion == 3) {
+				bullet.reset(player.x + 18, player.y);
+				bullet.body.velocity.y = 600;
+			}
 				
-            bulletTime = game.time.now + 150;
+            bulletTime = game.time.now + 450;
         }
     }
 }
