@@ -21,12 +21,7 @@ var platforms;
 var objetosRandom;
 
 var cursors;
-var stars;
-var keyA, keyD, keyW , keyR;
 
-
-//vidas
-//var vidaRecogida = false;
 var life;
 var cactus;
 
@@ -35,8 +30,6 @@ var velocityLeft = -150;
 var velocityRight = 150;
 var convertidoPollo = false;
 
-//pollos
-//var pollosRecogido = false;
 var pollo;
 
 //Tiro
@@ -48,7 +41,18 @@ var bullets1;
 var bullet1;
 var bulletTime1 = 0;
 
-var direccion = 0;
+var bullets2;
+var bullet2;
+var bulletTime2 = 0;
+
+var bullets3;
+var bullet3;
+var bulletTime3 = 0;
+
+var direccion = 1;
+var direccion1 = 1;
+var direccion2 = -1;
+var direccion3 = -1;
 
 function preload() {
 
@@ -57,13 +61,14 @@ function preload() {
     game.load.image('back0', 'assets/mapa1_capafondo.png');
     game.load.image('back1', 'assets/mapa1_capajuego.png');
     game.load.image('ground', 'assets/ground.png');
-    game.load.image('star', 'assets/star.png');
     game.load.image('vida', 'assets/firstaid.png')
-    game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
+    game.load.spritesheet('soldiermodel3blue', 'assets/soldiermodel3blue.png', 32, 48);
+	game.load.spritesheet('soldiermodel3red', 'assets/soldiermodel3red(1).png', 32, 48);
+	game.load.spritesheet('soldiermodel3green', 'assets/soldiermodel3green(1).png', 32, 48);
+	game.load.spritesheet('soldiermodel3orange', 'assets/soldiermodel3orange(1).png', 32, 48);
     game.load.spritesheet('objetos', 'assets/cactushologram.png', 38, 48);
     game.load.spritesheet('chicken', 'assets/gallina.png', 38, 48);
-    //game.load.image('pollos', 'assets/diamond.png')
-	game.load.image('bala','assets/bala.png');
+	game.load.image('bala','assets/bola.png');
 
 }
 
@@ -71,19 +76,13 @@ function create() {
 
     var stats = 70;
 
-
-
     //Genera vidas
     game.time.events.repeat(5000, 25, createObject, this);
-
-    //Genera pollos
-    //game.time.events.repeat(5000, 10, createPollo, this);
 
 	//Cargamos las fisicas arcade para nuestro videojuego
 	game.physics.startSystem(Phaser.Physics.ARCADE);
 
     //Añadimos el sprite de fondo
-    //game.add.sprite(0, 0, 'sky');
     var back0 = game.add.sprite(0, 0, 'back0');
     back0.scale.setTo(2,2);
     var back1 = game.add.sprite(0, 0, 'back1');
@@ -138,15 +137,16 @@ function create() {
     ledge7.scale.setTo(12,122);
 
     //Creamos al personaje jugador
-    player = game.add.sprite(32, game.world.height - 200, 'dude');
-    player1 = game.add.sprite(64, game.world.height - 400, 'dude');
+    player = game.add.sprite(32, game.world.height - 200, 'soldiermodel3blue');
+    player1 = game.add.sprite(64, game.world.height - 400, 'soldiermodel3red');
+	player2 = game.add.sprite(game.world.width - 64, game.world.height - 150, 'soldiermodel3green');
+    player3 = game.add.sprite(game.world.width - 64, game.world.height - 300, 'soldiermodel3orange');
 
     //Creamos las fisicas del personaje
     game.physics.arcade.enable(player);
     game.physics.arcade.enable(player1);
-    
-
- 
+    game.physics.arcade.enable(player2);
+    game.physics.arcade.enable(player3);
 
     // Caracteristicas fisicas del personaje
     player.body.bounce.y = 0.2;
@@ -156,144 +156,432 @@ function create() {
     player1.body.bounce.y = 0.2;
     player1.body.gravity.y = 300;
     player1.body.collideWorldBounds = true;
+	
+	player2.body.bounce.y = 0.2;
+    player2.body.gravity.y = 300;
+    player2.body.collideWorldBounds = true;
+	
+	player3.body.bounce.y = 0.2;
+    player3.body.gravity.y = 300;
+    player3.body.collideWorldBounds = true;
 
     //  Animaciones.
-    player.animations.add('left', [0, 1, 2, 3], 10, true);
-    player.animations.add('right', [5, 6, 7, 8], 10, true);
+    player.animations.add('left', [10,11,12,13], 10, true);
+    player.animations.add('right', [6,7,8,9], 10, true);
 
-    player1.animations.add('left', [0, 1, 2, 3], 10, true);
-    player1.animations.add('right', [5, 6, 7, 8], 10, true);
+    player1.animations.add('left', [10,11,12,13], 10, true);
+    player1.animations.add('right', [6,7,8,9], 10, true);
+	
+	player2.animations.add('left', [10,11,12,13], 10, true);
+    player2.animations.add('right', [6,7,8,9], 10, true);
+
+    player3.animations.add('left', [10,11,12,13], 10, true);
+    player3.animations.add('right', [6,7,8,9], 10, true);
 
     
 
     //Controles por teclado
      cursors = game.input.keyboard.createCursorKeys();
-     keyA = game.input.keyboard.addKey(Phaser.Keyboard.A);
-     keyD = game.input.keyboard.addKey(Phaser.Keyboard.D);
-     keyW = game.input.keyboard.addKey(Phaser.Keyboard.W);
-     keyR = game.input.keyboard.addKey(Phaser.Keyboard.R);
-
-	 game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
-      game.input.keyboard.addKeyCapture([ Phaser.Keyboard.X ]);
    
 	 /* Balas */
 	
 	bullets = game.add.group();
     bullets.enableBody = true;
     bullets.physicsBodyType = Phaser.Physics.ARCADE;
-	 bullets.createMultiple(30, 'bala');
+	bullets.createMultiple(300, 'bala');
 
-     bullets1 = game.add.group();
+    bullets1 = game.add.group();
     bullets1.enableBody = true;
     bullets1.physicsBodyType = Phaser.Physics.ARCADE;
-     bullets1.createMultiple(30, 'bala');
+    bullets1.createMultiple(300, 'bala');
+	
+	bullets2 = game.add.group();
+    bullets2.enableBody = true;
+    bullets2.physicsBodyType = Phaser.Physics.ARCADE;
+	bullets2.createMultiple(300, 'bala');
+	
+	bullets3 = game.add.group();
+    bullets3.enableBody = true;
+    bullets3.physicsBodyType = Phaser.Physics.ARCADE;
+	bullets3.createMultiple(300, 'bala');
 }
 
 function update() {
 
-	 //  Colisiones de jugador y plataformas
+	//  Colisiones de jugadores y plataformas
     game.physics.arcade.collide(player, platforms);
+	game.physics.arcade.collide(player1, platforms);
+	game.physics.arcade.collide(player2, platforms);
+	game.physics.arcade.collide(player3, platforms);
+	
     game.physics.arcade.collide(life, platforms);
     game.physics.arcade.collide(pollo, platforms);
-    game.physics.arcade.collide(player1, platforms);
-    game.physics.arcade.collide(player,player1);
-    
 
 	player.body.checkCollision.up = false;
     player1.body.checkCollision.up = false;
-	//game.physics.arcade.collide(bullets, platforms);
+	player2.body.checkCollision.up = false;
+    player3.body.checkCollision.up = false;
 	
 	game.physics.arcade.collide(bullets, platforms,destroyBullet);
-    game.physics.arcade.collide(bullets1, platforms,destroyBullet);
+    game.physics.arcade.collide(bullets1, platforms,destroyBullet1);
+	game.physics.arcade.collide(bullets2, platforms,destroyBullet2);
+	game.physics.arcade.collide(bullets3, platforms,destroyBullet3);
 
     game.physics.arcade.overlap(player, life, collectLife, null, this);
     game.physics.arcade.overlap(player, pollo, collectPollo, null, this);
     game.physics.arcade.overlap(player, cactus, collectCactus, null, this);
+	
     game.physics.arcade.overlap(player1, life, collectLife, null, this);
     game.physics.arcade.overlap(player1, pollo, collectPollo, null, this);
     game.physics.arcade.overlap(player1, cactus, collectCactus, null, this);
-
-
+	
+	game.physics.arcade.overlap(player2, life, collectLife, null, this);
+    game.physics.arcade.overlap(player2, pollo, collectPollo, null, this);
+    game.physics.arcade.overlap(player2, cactus, collectCactus, null, this);
+	
+	game.physics.arcade.overlap(player3, life, collectLife, null, this);
+    game.physics.arcade.overlap(player3, pollo, collectPollo, null, this);
+    game.physics.arcade.overlap(player3, cactus, collectCactus, null, this);
 
     //  Player en estatico
     player.body.velocity.x = 0;
     player1.body.velocity.x = 0;
+	player2.body.velocity.x = 0;
+	player3.body.velocity.x = 0;
 
-    if (cursors.left.isDown)
-    {
-        //  Movemos a la izquierda
-        player.body.velocity.x = velocityLeft;
+    /*
+	*	MOVIMIENTO JUGADOR 0
+	*
+	*	ASDW L.CONTROL
+	*
+	*/
+	
+	//AGACHADO
+	if ((game.input.keyboard.isDown(Phaser.Keyboard.S) && player.body.touching.down)){
+			player.animations.stop();
+			//IZQUIERDA-AGACHADO
+			if (game.input.keyboard.isDown(Phaser.Keyboard.A) || direccion == -1){
+				player.frame = 15;
+			}
+			//DERECHA-AGACHADO
+			else if (game.input.keyboard.isDown(Phaser.Keyboard.D) || direccion == 1){
+				player.frame = 14;
+			}
+	}
+	//SALTO
+	else if (!player.body.touching.down) {
+	
+		player.animations.stop();
 		
-		//AÑADIR
-		direccion = -1;
-
-        player.animations.play('left');
+		//APUNTAR HACIA ARRIBA
+		if (game.input.keyboard.isDown(Phaser.Keyboard.W) && !(game.input.keyboard.isDown(Phaser.Keyboard.A) || game.input.keyboard.isDown(Phaser.Keyboard.D))) {
+			player.frame = 2;
+			direccion = 2;
+		}
+		//APUNTAR HACIA ABAJO
+		else if (game.input.keyboard.isDown(Phaser.Keyboard.S) && !(game.input.keyboard.isDown(Phaser.Keyboard.A) || game.input.keyboard.isDown(Phaser.Keyboard.D))) {
+			player.frame = 3;
+			direccion = 3;
+		}
+		//SALTO IZQUIERDA
+		else if (game.input.keyboard.isDown(Phaser.Keyboard.A)){
+			player.body.velocity.x = velocityLeft;
+			direccion = -1;
+			player.frame = 5;
+		}
+		//SALTO DERECHA
+		else if (game.input.keyboard.isDown(Phaser.Keyboard.D)){
+			player.body.velocity.x = velocityRight;
+			direccion = 1;
+			player.frame = 4;
+		}
     }
-    else if (cursors.right.isDown)
-    {
-        //  Movemos a la drecha
-        player.body.velocity.x = velocityRight;
-		
-		//AÑADIR
-		direccion = 1;
-
-        player.animations.play('right');
-    }
-    else
-    {
-        //  Estatico
-        player.animations.stop();
-		
-		//AÑADIR
-		direccion = 0;
-		
-        player.frame = 4;
-    }
-    
-
-    if (keyA.isDown)
-   {
-       //  Movemos a la izquierda
-       player1.body.velocity.x = velocityLeft;
-
-       player1.animations.play('left');
-   }
-   else if (keyD.isDown)
-   {
-       //  Movemos a la drecha
-       player1.body.velocity.x = velocityRight;
-
-       player1.animations.play('right');
-   }else
-   {
-       //  Estatico
-       player1.animations.stop();
-
-       player1.frame = 4;
-   }
-
-
-    //  Permitimos el salto
-    if (cursors.up.isDown && player.body.touching.down)
+	else {
+		//MOVIMIENTO A LA IZQUIERDA
+		if (game.input.keyboard.isDown(Phaser.Keyboard.A))
+		{
+			//Movemos a la izquierda
+			player.body.velocity.x = velocityLeft;
+			direccion = -1;
+			player.animations.play('left');
+		}
+		//MOVIMIENTO A LA DERECHA
+		else if (game.input.keyboard.isDown(Phaser.Keyboard.D))
+		{
+			//Movemos a la derecha
+			player.body.velocity.x = velocityRight;
+			direccion = 1;
+			player.animations.play('right');
+		}
+		else
+		{
+			//  PERSONAJE QUIETO
+			player.animations.stop();
+			if (direccion == 1)
+				player.frame = 0;
+			else if(direccion == -1)
+				player.frame = 1;
+		}
+	}
+	//SALTO
+	if (game.input.keyboard.isDown(Phaser.Keyboard.W) && player.body.touching.down)
     {
         player.body.velocity.y = -350;
+	}
+	
+	// DISPARO
+	if (game.input.keyboard.isDown(Phaser.Keyboard.X) && convertidoPollo == false)
+    {
+      fireBullet(0);
     }
 	
-     if (keyW.isDown && player1.body.touching.down)
-   {
-     player1.body.velocity.y = -350;
-   }
-
-	// Disparar
-	if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) && direccion != 0 && convertidoPollo == false)
-    {
-        fireBullet();
-
+	/*
+	*	MOVIMIENTO JUGADOR 1
+	*/
+	
+	//AGACHADO
+	if ((game.input.keyboard.isDown(Phaser.Keyboard.H) && player.body.touching.down)){
+			player1.animations.stop();
+			//IZQUIERDA-AGACHADO
+			if (game.input.keyboard.isDown(Phaser.Keyboard.G) || direccion1 == -1){
+				player1.frame = 15;
+			}
+			//DERECHA-AGACHADO
+			else if (game.input.keyboard.isDown(Phaser.Keyboard.J) || direccion1 == 1){
+				player1.frame = 14;
+			}
+	}
+	//SALTO
+	else if (!player1.body.touching.down) {
+	
+		player1.animations.stop();
+		
+		//APUNTAR HACIA ARRIBA
+		if (game.input.keyboard.isDown(Phaser.Keyboard.Y) && !(game.input.keyboard.isDown(Phaser.Keyboard.G) || game.input.keyboard.isDown(Phaser.Keyboard.J))) {
+			player1.frame = 2;
+			direccion1 = 2;
+		}
+		//APUNTAR HACIA ABAJO
+		else if (game.input.keyboard.isDown(Phaser.Keyboard.H) && !(game.input.keyboard.isDown(Phaser.Keyboard.G) || game.input.keyboard.isDown(Phaser.Keyboard.J))) {
+			player1.frame = 3;
+			direccion1 = 3;
+		}
+		//SALTO IZQUIERDA
+		else if (game.input.keyboard.isDown(Phaser.Keyboard.G)){
+			player1.body.velocity.x = velocityLeft;
+			direccion1 = -1;
+			player1.frame = 5;
+		}
+		//SALTO DERECHA
+		else if (game.input.keyboard.isDown(Phaser.Keyboard.J)){
+			player1.body.velocity.x = velocityRight;
+			direccion1 = 1;
+			player1.frame = 4;
+		}
     }
-
-    if (game.input.keyboard.isDown(Phaser.Keyboard.X)&& direccion != 0 && convertidoPollo == false)
+	else {
+		//MOVIMIENTO A LA IZQUIERDA
+		if (game.input.keyboard.isDown(Phaser.Keyboard.G))
+		{
+			//Movemos a la izquierda
+			player1.body.velocity.x = velocityLeft;
+			direccion1 = -1;
+			player1.animations.play('left');
+		}
+		//MOVIMIENTO A LA DERECHA
+		else if (game.input.keyboard.isDown(Phaser.Keyboard.J))
+		{
+			//Movemos a la derecha
+			player1.body.velocity.x = velocityRight;
+			direccion1 = 1;
+			player1.animations.play('right');
+		}
+		else
+		{
+			//  PERSONAJE QUIETO
+			player1.animations.stop();
+			if (direccion1 == 1)
+				player1.frame = 0;
+			else if(direccion1 == -1)
+				player1.frame = 1;
+		}
+	}
+	//SALTO
+	if (game.input.keyboard.isDown(Phaser.Keyboard.Y) && player1.body.touching.down)
     {
-        fireBullet1();
+        player1.body.velocity.y = -350;
+	}
+	
+	// DISPARO
+	if (game.input.keyboard.isDown(Phaser.Keyboard.M) && convertidoPollo == false)
+    {
+        fireBullet(1);
+    }
+	
+	/*
+	*	MOVIMIENTO JUGADOR 2
+	*/
+	
+	//AGACHADO
+	if ((game.input.keyboard.isDown(Phaser.Keyboard.DOWN) && player.body.touching.down)){
+			player2.animations.stop();
+			//IZQUIERDA-AGACHADO
+			if (game.input.keyboard.isDown(Phaser.Keyboard.LEFT) || direccion2 == -1){
+				player2.frame = 15;
+			}
+			//DERECHA-AGACHADO
+			else if (game.input.keyboard.isDown(Phaser.Keyboard.RIGHT) || direccion2 == 1){
+				player2.frame = 14;
+			}
+	}
+	//SALTO
+	else if (!player2.body.touching.down) {
+	
+		player2.animations.stop();
+		
+		//APUNTAR HACIA ARRIBA
+		if (game.input.keyboard.isDown(Phaser.Keyboard.UP) && !(game.input.keyboard.isDown(Phaser.Keyboard.LEFT) || game.input.keyboard.isDown(Phaser.Keyboard.RIGHT))) {
+			player2.frame = 2;
+			direccion2 = 2;
+		}
+		//APUNTAR HACIA ABAJO
+		else if (game.input.keyboard.isDown(Phaser.Keyboard.DOWN) && !(game.input.keyboard.isDown(Phaser.Keyboard.LEFT) || game.input.keyboard.isDown(Phaser.Keyboard.RIGHT))) {
+			player2.frame = 3;
+			direccion2 = 3;
+		}
+		//SALTO IZQUIERDA
+		else if (game.input.keyboard.isDown(Phaser.Keyboard.LEFT)){
+			player2.body.velocity.x = velocityLeft;
+			direccion2 = -1;
+			player2.frame = 5;
+		}
+		//SALTO DERECHA
+		else if (game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)){
+			player2.body.velocity.x = velocityRight;
+			direccion2 = 1;
+			player2.frame = 4;
+		}
+    }
+	else {
+		//MOVIMIENTO A LA IZQUIERDA
+		if (game.input.keyboard.isDown(Phaser.Keyboard.LEFT))
+		{
+			//Movemos a la izquierda
+			player2.body.velocity.x = velocityLeft;
+			direccion2 = -1;
+			player2.animations.play('left');
+		}
+		//MOVIMIENTO A LA DERECHA
+		else if (game.input.keyboard.isDown(Phaser.Keyboard.RIGHT))
+		{
+			//Movemos a la derecha
+			player2.body.velocity.x = velocityRight;
+			direccion2 = 1;
+			player2.animations.play('right');
+		}
+		else
+		{
+			//  PERSONAJE QUIETO
+			player2.animations.stop();
+			if (direccion2 == 1)
+				player2.frame = 0;
+			else if(direccion2 == -1)
+				player2.frame = 1;
+		}
+	}
+	//SALTO
+	if (game.input.keyboard.isDown(Phaser.Keyboard.UP) && player2.body.touching.down)
+    {
+        player2.body.velocity.y = -350;
+	}
+	
+	// DISPARO
+	if (game.input.keyboard.isDown(Phaser.Keyboard.NUMPAD_0) && convertidoPollo == false)
+    {
+        fireBullet(2);
+    }
+	
+	/*
+	*	MOVIMIENTO JUGADOR 3
+	*/
+	
+	//AGACHADO
+	if ((game.input.keyboard.isDown(Phaser.Keyboard.NUMPAD_5) && player3.body.touching.down)){
+			player3.animations.stop();
+			//IZQUIERDA-AGACHADO
+			if (game.input.keyboard.isDown(Phaser.Keyboard.NUMPAD_4) || direccion3 == -1){
+				player3.frame = 15;
+			}
+			//DERECHA-AGACHADO
+			else if (game.input.keyboard.isDown(Phaser.Keyboard.NUMPAD_6) || direccion3 == 1){
+				player3.frame = 14;
+			}
+	}
+	//SALTO
+	else if (!player3.body.touching.down) {
+	
+		player3.animations.stop();
+		
+		//APUNTAR HACIA ARRIBA
+		if (game.input.keyboard.isDown(Phaser.Keyboard.NUMPAD_8) && !(game.input.keyboard.isDown(Phaser.Keyboard.NUMPAD_4) || game.input.keyboard.isDown(Phaser.Keyboard.NUMPAD_6))) {
+			player3.frame = 2;
+			direccion3 = 2;
+		}
+		//APUNTAR HACIA ABAJO
+		else if (game.input.keyboard.isDown(Phaser.Keyboard.NUMPAD_5) && !(game.input.keyboard.isDown(Phaser.Keyboard.NUMPAD_4) || game.input.keyboard.isDown(Phaser.Keyboard.NUMPAD_6))) {
+			player3.frame = 3;
+			direccion3 = 3;
+		}
+		//SALTO IZQUIERDA
+		else if (game.input.keyboard.isDown(Phaser.Keyboard.NUMPAD_4)){
+			player3.body.velocity.x = velocityLeft;
+			direccion3 = -1;
+			player3.frame = 5;
+		}
+		//SALTO DERECHA
+		else if (game.input.keyboard.isDown(Phaser.Keyboard.NUMPAD_6)){
+			player3.body.velocity.x = velocityRight;
+			direccion3 = 1;
+			player3.frame = 4;
+		}
+    }
+	else {
+		//MOVIMIENTO A LA IZQUIERDA
+		if (game.input.keyboard.isDown(Phaser.Keyboard.NUMPAD_4))
+		{
+			//Movemos a la izquierda
+			player3.body.velocity.x = velocityLeft;
+			direccion3 = -1;
+			player3.animations.play('left');
+		}
+		//MOVIMIENTO A LA DERECHA
+		else if (game.input.keyboard.isDown(Phaser.Keyboard.NUMPAD_6))
+		{
+			//Movemos a la derecha
+			player3.body.velocity.x = velocityRight;
+			direccion3 = 1;
+			player3.animations.play('right');
+		}
+		else
+		{
+			//  PERSONAJE QUIETO
+			player3.animations.stop();
+			if (direccion3 == 1)
+				player3.frame = 0;
+			else if(direccion3 == -1)
+				player3.frame = 1;
+		}
+	}
+	//SALTO
+	if (game.input.keyboard.isDown(Phaser.Keyboard.NUMPAD_8) && player3.body.touching.down)
+    {
+        player3.body.velocity.y = -350;
+	}
+	
+	// DISPARO
+	if (game.input.keyboard.isDown(Phaser.Keyboard.NUMPAD_ADD) && convertidoPollo == false)
+    {
+        fireBullet(3);
     }
 }
 
@@ -304,61 +592,131 @@ function update() {
     function destroyBullet1(bullet1,platforms) {
         bullet1.kill();
     }
+	
+	function destroyBullet2(bullet2,platforms) {
+		bullet2.kill();
+	}
+	
+	function destroyBullet3(bullet3,platforms) {
+		bullet3.kill();
+	}	
+	
 
 	//metodo de disparo
-function fireBullet () {
+function fireBullet (n) {
 
-    if (game.time.now > bulletTime)
-    {
-        bullet = bullets.getFirstExists(false);
+	switch(n) {
+	case 0: if (game.time.now > bulletTime)
+			{
+				bullet = bullets.getFirstExists(false);
 
-        if (bullet)
-        {
-            bullet.reset(player.x + 6, player.y - 8);
-            if (direccion == -1)
-                bullet.body.velocity.x = -300;
-            else if (direccion == 1)
-                bullet.body.velocity.x = 300;
-            bulletTime = game.time.now + 150;
-        }
-    }
-}
+				if (bullet)
+				{
+					if (direccion == -1) {
+						bullet.reset(player.x, player.y + 5);
+						bullet.body.velocity.x = -600;
+					}
+					else if (direccion == 1) {
+						bullet.reset(player.x + 38, player.y + 5);
+						bullet.body.velocity.x = 600;
+					}
+					else if (direccion == 2) {
+						bullet.reset(player.x + 19, player.y);
+						bullet.body.velocity.y = -600;
+					}
+					else if (direccion == 3) {
+						bullet.reset(player.x + 18, player.y);
+						bullet.body.velocity.y = 600;
+					}
+				
+					bulletTime = game.time.now + 450;
+				}
+			}
+	break;
+	case 1: if (game.time.now > bulletTime1)
+			{
+				bullet1 = bullets1.getFirstExists(false);
 
+				if (bullet1)
+				{
+					if (direccion1 == -1) {
+						bullet1.reset(player1.x, player1.y + 5);
+						bullet1.body.velocity.x = -600;
+					}
+					else if (direccion1 == 1) {
+						bullet1.reset(player1.x + 38, player1.y + 5);
+						bullet1.body.velocity.x = 600;
+					}
+					else if (direccion1 == 2) {
+						bullet1.reset(player1.x + 19, player1.y);
+						bullet1.body.velocity.y = -600;
+					}
+					else if (direccion1 == 3) {
+						bullet1.reset(player1.x + 18, player1.y);
+						bullet1.body.velocity.y = 600;
+					}
+				
+					bulletTime1 = game.time.now + 450;
+				}
+			}
+	break;
+	case 2: if (game.time.now > bulletTime2)
+			{
+				bullet2 = bullets2.getFirstExists(false);
 
- function fireBullet1 () {
+				if (bullet2)
+				{
+					if (direccion2 == -1) {
+						bullet2.reset(player2.x, player2.y + 5);
+						bullet2.body.velocity.x = -600;
+					}
+					else if (direccion2 == 1) {
+						bullet2.reset(player2.x + 38, player2.y + 5);
+						bullet2.body.velocity.x = 600;
+					}
+					else if (direccion2 == 2) {
+						bullet2.reset(player2.x + 19, player2.y);
+						bullet2.body.velocity.y = -600;
+					}
+					else if (direccion2 == 3) {
+						bullet2.reset(player2.x + 18, player2.y);
+						bullet2.body.velocity.y = 600;
+					}
+				
+					bulletTime2 = game.time.now + 450;
+				}
+			}
+	break;
+	case 3: if (game.time.now > bulletTime3)
+			{
+				bullet3 = bullets3.getFirstExists(false);
 
-    if (game.time.now > bulletTime1)
-    {
-        bullet1 = bullets1.getFirstExists(false);
-
-        if (bullet1)
-        {
-            bullet1.reset(player1.x + 6, player1.y - 8);
-            if (direccion == -1)
-                bullet1.body.velocity.x = -300;
-            else if (direccion == 1)
-                bullet1.body.velocity.x = 300;
-            bulletTime1 = game.time.now + 150;
-        }
-    }
-}
-
-
- 
-
-	
-	
-	//  Called if the bullet goes out of the screen
-function resetBullet (bullet) {
-
-    bullet.kill();
-
-}
-
-function resetBullet1 (bullet1) {
-
-    bullet1.kill();
-
+				if (bullet3)
+				{
+					if (direccion3 == -1) {
+						bullet3.reset(player3.x, player3.y + 5);
+						bullet3.body.velocity.x = -600;
+					}
+					else if (direccion3 == 1) {
+						bullet3.reset(player3.x + 38, player3.y + 5);
+						bullet3.body.velocity.x = 600;
+					}
+					else if (direccion3 == 2) {
+						bullet3.reset(player3.x + 19, player3.y);
+						bullet3.body.velocity.y = -600;
+					}
+					else if (direccion3 == 3) {
+						bullet3.reset(player3.x + 18, player3.y);
+						bullet3.body.velocity.y = 600;
+					}
+				
+					bulletTime3 = game.time.now + 450;
+				}
+			}
+	break;
+	default:
+	break;
+	}
 }
 
 function createObject() {
@@ -386,48 +744,23 @@ function createObject() {
     cactus.animations.play('hologramaeffect3');
     cactus.scale.setTo(2,2);
     break;
-
     default : break;
 
+	}
+	objetoRecogido = true;
+	game.physics.arcade.enable(objetosRandom);
+
+	}
 }
-objetoRecogido = true;
-game.physics.arcade.enable(objetosRandom);
-
-
-
-
-}
-}
-
 
 function collectLife (player, life) {
-    
-    // Removes the star from the screen
+    // Quita el holograma del juego
     life.kill();
 
     objetoRecogido = false;
-
 }
 
-/*function createPollo() {
-
-   
-    if(pollosRecogido == false){
-    pollo = game.add.sprite(game.world.width/2 - 70, game.world.height/2 - 70 , 'pollos');
-
-    
-
-    pollo.body.bounce.y = 0.9;
-    pollo.body.gravity.y = 150;
-    pollo.body.collideWorldBounds = true;
-
-    pollosRecogido = true;
-}*/
-
-
 function collectPollo (player, pollo) {
-    
-   
     pollo.kill();
 
     objetoRecogido = false;
@@ -438,19 +771,14 @@ function collectPollo (player, pollo) {
 }
 
 function collectCactus (player, cactus) {
-    
-   
     cactus.kill();
     velocidadMaxima();
     game.time.events.add(Phaser.Timer.SECOND * 4, velocidadNormal, this);
     objetoRecogido = false;
-
 }
 
 function convertirPollos() {
-
-
-    if (player.key === 'dude' && player1.key === 'dude')
+    if (player.key === 'soldiermodel3blue' && player1.key === 'soldiermodel3red' && player2.key === 'soldiermodel3green' && player3.key === 'soldiermodel3orange')
     {
         player.loadTexture('chicken', 0, false);
         player.animations.add('pollos', [0, 1], 10, true);
@@ -459,61 +787,73 @@ function convertirPollos() {
         player1.loadTexture('chicken', 0, false);
         player1.animations.add('pollos', [0, 1], 10, false);
         player1.animations.play('pollos');
+		
+		player2.loadTexture('chicken', 0, false);
+        player2.animations.add('pollos', [0, 1], 10, true);
+        player2.animations.play('pollos');
+		
+        player3.loadTexture('chicken', 0, false);
+        player3.animations.add('pollos', [0, 1], 10, true);
+        player3.animations.play('pollos');
 
         player.body.bounce.y = 1;
         player.body.gravity.y = 10;
         
-
         player1.body.bounce.y = 1;
         player1.body.gravity.y = 10;
-        
-        
-
+		
+		player2.body.bounce.y = 1;
+        player2.body.gravity.y = 10;
+		
+		player3.body.bounce.y = 1;
+        player3.body.gravity.y = 10;
     }
 }
 
 function vueltaNormalidad() {
-
-
     if (player.key === 'chicken' && player1.key === 'chicken')
     {
-        player.loadTexture('dude', 0, false);
-        player1.loadTexture('dude', 0, false);
-        player.animations.add('left', [0, 1, 2, 3], 10, true);
-        player.animations.add('right', [5, 6, 7, 8], 10, true);
-    
-        player1.animations.add('left', [0, 1, 2, 3], 10, true);
-        player1.animations.add('right', [5, 6, 7, 8], 10, true);
+        player.loadTexture('soldiermodel3blue', 0, false);
+		player.animations.add('left', [10,11,12,13], 10, true);
+		player.animations.add('right', [6,7,8,9], 10, true);
+		
+        player1.loadTexture('soldiermodel3red', 0, false);
+		player1.animations.add('left', [10,11,12,13], 10, true);
+		player1.animations.add('right', [6,7,8,9], 10, true);
+		
+		player2.loadTexture('soldiermodel3green', 0, false);
+		player2.animations.add('left', [10,11,12,13], 10, true);
+		player2.animations.add('right', [6,7,8,9], 10, true);
+		
+		player3.loadTexture('soldiermodel3orange', 0, false);
+		player3.animations.add('left', [10,11,12,13], 10, true);
+		player3.animations.add('right', [6,7,8,9], 10, true);
 
         player.body.bounce.y = 0.2;
         player.body.gravity.y = 300;
-        
 
         player1.body.bounce.y = 0.2;
         player1.body.gravity.y = 300;
+		
+		player2.body.bounce.y = 0.2;
+        player2.body.gravity.y = 300;
+		
+		player3.body.bounce.y = 0.2;
+        player3.body.gravity.y = 300;
         
         convertidoPollo = false;
-
     }
-  
-    
 }
 
 function velocidadMaxima() {
-
-velocityLeft = -500;
-velocityRight = 500;
-
-
+	velocityLeft = -500;
+	velocityRight = 500;
 }
 
 function velocidadNormal(){
-
-velocityLeft = -150;
-velocityRight = 150;
+	velocityLeft = -150;
+	velocityRight = 150;
 }
-
-
 </script>
 
 </body>
