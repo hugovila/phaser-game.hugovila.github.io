@@ -31,6 +31,8 @@ var life;
 var cactus;
 
 var objetoRecogido = false;
+var velocityLeft = -150;
+var velocityRight = 150;
 
 //pollos
 //var pollosRecogido = false;
@@ -58,6 +60,7 @@ function preload() {
     game.load.image('vida', 'assets/firstaid.png')
     game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
     game.load.spritesheet('objetos', 'assets/cactushologram.png', 38, 48);
+    game.load.spritesheet('chicken', 'assets/gallina.png', 38, 48);
     //game.load.image('pollos', 'assets/diamond.png')
 	game.load.image('bala','assets/bala.png');
 
@@ -218,7 +221,7 @@ function update() {
     if (cursors.left.isDown)
     {
         //  Movemos a la izquierda
-        player.body.velocity.x = -150;
+        player.body.velocity.x = velocityLeft;
 		
 		//AÑADIR
 		direccion = -1;
@@ -228,7 +231,7 @@ function update() {
     else if (cursors.right.isDown)
     {
         //  Movemos a la drecha
-        player.body.velocity.x = 150;
+        player.body.velocity.x = velocityRight;
 		
 		//AÑADIR
 		direccion = 1;
@@ -250,14 +253,14 @@ function update() {
     if (keyA.isDown)
    {
        //  Movemos a la izquierda
-       player1.body.velocity.x = -150;
+       player1.body.velocity.x = velocityLeft;
 
        player1.animations.play('left');
    }
    else if (keyD.isDown)
    {
        //  Movemos a la drecha
-       player1.body.velocity.x = 150;
+       player1.body.velocity.x = velocityRight;
 
        player1.animations.play('right');
    }else
@@ -426,6 +429,8 @@ function collectPollo (player, pollo) {
     pollo.kill();
 
     objetoRecogido = false;
+    convertirPollos();
+    game.time.events.add(Phaser.Timer.SECOND * 4, vueltaNormalidad, this);
 
 }
 
@@ -433,11 +438,77 @@ function collectCactus (player, cactus) {
     
    
     cactus.kill();
-
+    velocidadMaxima();
+    game.time.events.add(Phaser.Timer.SECOND * 4, velocidadNormal, this);
     objetoRecogido = false;
 
 }
 
+function convertirPollos() {
+
+
+    if (player.key === 'dude' && player1.key === 'dude')
+    {
+        player.loadTexture('chicken', 0, false);
+        player.animations.add('pollos', [0, 1], 10, true);
+        player.animations.play('pollos');
+        
+        player1.loadTexture('chicken', 0, false);
+        player1.animations.add('pollos', [0, 1], 10, false);
+        player1.animations.play('pollos');
+
+        player.body.bounce.y = 1;
+        player.body.gravity.y = 10;
+        
+
+        player1.body.bounce.y = 1;
+        player1.body.gravity.y = 10;
+        
+        
+
+    }
+}
+
+function vueltaNormalidad() {
+
+
+    if (player.key === 'chicken' && player1.key === 'chicken')
+    {
+        player.loadTexture('dude', 0, false);
+        player1.loadTexture('dude', 0, false);
+        player.animations.add('left', [0, 1, 2, 3], 10, true);
+        player.animations.add('right', [5, 6, 7, 8], 10, true);
+    
+        player1.animations.add('left', [0, 1, 2, 3], 10, true);
+        player1.animations.add('right', [5, 6, 7, 8], 10, true);
+
+        player.body.bounce.y = 0.2;
+        player.body.gravity.y = 300;
+        
+
+        player1.body.bounce.y = 0.2;
+        player1.body.gravity.y = 300;
+        
+        
+
+    }
+  
+    
+}
+
+function velocidadMaxima() {
+
+velocityLeft = -300;
+velocityRight = 300;
+
+
+}
+
+function velocidadNormal(){
+
+velocityLeft = -150;
+velocityRight = 150;
+}
 
 
 </script>
