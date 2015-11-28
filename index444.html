@@ -1,62 +1,22 @@
-<!doctype html>
-<html lang="en">
-<head>
+<!doctype html> 
+<html lang="en"> 
+<head> 
 	<meta charset="UTF-8" />
-	<title>Phaser - Making your first game, part 1</title>
+	<title>GeekHubs Hackathon!!!!</title>
     <script src="js/phaser.min.js"></script>
     <style type="text/css">
         body {
             margin: 0;
-			padding-top: 4%;
-			background-color: #313941;
         }
-
-		}
-		#game {
-			/*min-height: 10em;*/
-			min-height: 2em;
-   			position: relative;
-
-		}
-		.wrapper {
-			margin: 0;
-   			position: absolute;
-   			top: 50%;
-   			transform: translate(0, -50%);
-
-		}
-
-		canvas {
-
-			/*margin: 0;
-   			position: absolute;
-   			top: 50%;
-   			transform: translate(0, -50%);*/
-
-
-			margin-left: auto;
-    		margin-right: auto;
-    		width: 800px;
-
-
-		}
-
     </style>
 </head>
 <body>
-<div id="game">
-	<div class="wrapper">
+
 <script type="text/javascript">
 
 var game = new Phaser.Game(968,544, Phaser.AUTO, '', { preload: preload, create: create, update: update },false,false);
 
-var statePlayerHead = [], statePlayerLife = [], statePlayerVictories = [], statePlayerPower = [],
-	statePlayerBarLife = [], statePlayerBarVictories = [], statePlayerBarPower = [];
-
-var healthbar = [];
-
-var players;
-var player, player1, player2, player3;
+var player, player1;
 var platforms;
 var objetosRandom;
 
@@ -94,24 +54,12 @@ var direccion1 = 1;
 var direccion2 = -1;
 var direccion3 = -1;
 
-var lifePlayer = 100;
-var lifePlayer1 = 100;
-var lifePlayer2 = 100;
-var lifePlayer3 = 100;
-
-var playerIsDead = false;
-var playerIsDead1 = false;
-var playerIsDead2 = false;
-var playerIsDead3 = false;
-
 var music;
 var chickenMusic;
 var cactusMusic;
 var jumpMusic;
 var shootMusic;
 var lifeMusic;
-
-var healthB, healthB1, healthB2, healthB3;
 
 function preload() {
 
@@ -127,97 +75,28 @@ function preload() {
 	game.load.spritesheet('soldiermodel3orange', 'assets/soldiermodel3orange(1).png', 32, 48);
     game.load.spritesheet('objetos', 'assets/cactushologram.png', 38, 48);
     game.load.spritesheet('chicken', 'assets/gallina.png', 38, 48);
-	game.load.image('bala','assets/bola.png');
-	game.load.spritesheet('heads', 'assets/heads3.png', 35, 35);
-	game.load.spritesheet('iconsStats', 'assets/miniicons.png', 5, 5);
-	game.load.spritesheet('iconsPower', 'assets/bars.png', 88, 5);
-	game.load.image('statsBackground', 'assets/statsBackground.png');
-	game.load.image('barLife', 'assets/barLife.png');
-	game.load.audio('music', 'assets/sounds/map_one.mp3');
+    game.load.audio('music', 'assets/sounds/map_one.mp3');
     game.load.audio('chickenmusic','assets/sounds/chicken.mp3');
     game.load.audio('lifemusic','assets/sounds/1up.mp3');
     game.load.audio('cactusmusic','assets/sounds/hypedcucaracha.mp3');
     game.load.audio('jumpmusic','assets/sounds/steporfall.mp3')
     game.load.audio('shoot', 'assets/sounds/shoot.mp3');
+	game.load.image('bala','assets/bola.png');
 
 }
 
 function create() {
 
+	game.stage.smoothed = false;
+
     var stats = 70;
-	var statsWidth = game.world.width, statsHeight = 70;
-	var statsPosX, statsPosY;
-	
-	music = game.add.audio('music');
+    //Música
+    music = game.add.audio('music');
 
     music.loop = true;
     music.volume = 0.5;
     music.play();
-		/** Estado del juego **/
 
-	statsBoard = game.add.group();
-
-	/* Heads */
-	function createHeads() {
-		for (var playerNum = 0; playerNum < 4; playerNum++) {
-			statePlayerHead[playerNum] = game.add.sprite(10 + (242 * playerNum), game.world.height - statsHeight + 5, 'heads');
-			statePlayerHead[playerNum].animations.add('live', [playerNum], 10, true);
-			statePlayerHead[playerNum].animations.add('dead', [4], 10, true);
-			statePlayerHead[playerNum].animations.add('init', [playerNum, 4], 10, true);
-
-			//statePlayerHead[playerState].animations.play('init');
-			statePlayerHead[playerNum].animations.play('live');
-		}
-	}
-	
-	healthB = statsBoard.create((10 + 35 + 5 + 10) + (242 * 0), game.world.height - statsHeight + 10, 'barLife');
-	healthB1 = statsBoard.create((10 + 35 + 5 + 10) + (242 * 1), game.world.height - statsHeight + 10, 'barLife');
-	healthB2 = statsBoard.create((10 + 35 + 5 + 10) + (242 * 2), game.world.height - statsHeight + 10, 'barLife');
-	healthB3 = statsBoard.create((10 + 35 + 5 + 10) + (242 * 3), game.world.height - statsHeight + 10, 'barLife');
-
-	function createBars() {
-	/* Stats animations life, victories, power */
-		for (var playerNum = 0; playerNum < 4; playerNum++) {
-			//// life
-			statePlayerLife[playerNum] = game.add.sprite((10 + 35 + 5) + (242 * playerNum), game.world.height - statsHeight + 10, 'iconsStats');
-			statePlayerLife[playerNum].animations.add('life', [0], 10, true);
-
-			statePlayerLife[playerNum].animations.play('life');
-
-			// Life bare
-			statePlayerBarLife[playerNum] = game.add.sprite((10 + 35 + 5 + 10) + (242 * playerNum), game.world.height - statsHeight + 10, 'iconsPower');
-			statePlayerBarLife[playerNum].animations.add('powerlife', [0], 10, true);
-
-			statePlayerBarLife[playerNum].animations.play('powerlife');
-			
-			
-
-
-			//// Power
-			statePlayerPower[playerNum] = game.add.sprite((10 + 35 + 5) + (242 * playerNum), game.world.height - statsHeight + 20, 'iconsStats');
-			statePlayerPower[playerNum].animations.add('victory', [2], 10, true);
-
-			statePlayerPower[playerNum].animations.play('victory');
-
-			// Power bare
-			statePlayerBarPower[playerNum] = game.add.sprite((10 + 35 + 5 + 10) + (242 * playerNum), game.world.height - statsHeight + 10 + 10, 'iconsPower');
-			statePlayerBarPower[playerNum].animations.add('powerbar', [1], 10, true);
-
-			statePlayerBarPower[playerNum].animations.play('powerbar');
-
-
-			//// Victories
-			statePlayerVictories[playerNum] = game.add.sprite((10 + 35 + 5) + (242 * playerNum), game.world.height - statsHeight + 30, 'iconsStats');
-			statePlayerVictories[playerNum].animations.add('victory', [1], 10, true);
-
-			statePlayerVictories[playerNum].animations.play('victory');
-
-		}
-	}
-
-	createHeads();
-	createBars();
-	
     //Genera vidas
     game.time.events.repeat(5000, 25, createObject, this);
 
@@ -232,7 +111,6 @@ function create() {
 
     //Creamos el grupo de plataformas
     platforms = game.add.group();
-	
 
     //Le damos propiedades de cuerpo al grupo plataformas
     platforms.enableBody = true;
@@ -278,20 +156,12 @@ function create() {
     var ledge7 = platforms.create(478, game.world.height - (122 + stats), 'ground');
     ledge7.body.immovable = true;
     ledge7.scale.setTo(12,122);
-	
-	//Creamos el grupo players
-	players = game.add.group();
 
     //Creamos al personaje jugador
     player = game.add.sprite(32, game.world.height - 200, 'soldiermodel3blue');
     player1 = game.add.sprite(64, game.world.height - 400, 'soldiermodel3red');
 	player2 = game.add.sprite(game.world.width - 64, game.world.height - 150, 'soldiermodel3green');
     player3 = game.add.sprite(game.world.width - 64, game.world.height - 300, 'soldiermodel3orange');
-	
-	players.add(player);
-	players.add(player1);
-	players.add(player2);
-	players.add(player3);
 
     //Creamos las fisicas del personaje
     game.physics.arcade.enable(player);
@@ -377,22 +247,6 @@ function update() {
     game.physics.arcade.collide(bullets1, platforms,destroyBullet1);
 	game.physics.arcade.collide(bullets2, platforms,destroyBullet2);
 	game.physics.arcade.collide(bullets3, platforms,destroyBullet3);
-	
-	game.physics.arcade.collide(bullets, player1,hitPlayer1);
-	game.physics.arcade.collide(bullets, player2,hitPlayer2);
-	game.physics.arcade.collide(bullets, player3,hitPlayer3);
-	
-    game.physics.arcade.collide(bullets1, players,hitPlayer);
-	game.physics.arcade.collide(bullets1, players,hitPlayer2);
-	game.physics.arcade.collide(bullets1, players,hitPlayer3);
-	
-	game.physics.arcade.collide(bullets2, players,hitPlayer);
-	game.physics.arcade.collide(bullets2, players,hitPlayer1);
-	game.physics.arcade.collide(bullets2, players,hitPlayer3);
-	
-	game.physics.arcade.collide(bullets3, players,hitPlayer);
-	game.physics.arcade.collide(bullets3, players,hitPlayer1);
-	game.physics.arcade.collide(bullets3, players,hitPlayer2);
 
     game.physics.arcade.overlap(player, life, collectLife, null, this);
     game.physics.arcade.overlap(player, pollo, collectPollo, null, this);
@@ -455,12 +309,14 @@ function update() {
 			player.body.velocity.x = velocityLeft;
 			direccion = -1;
 			player.frame = 5;
+			
 		}
 		//SALTO DERECHA
 		else if (game.input.keyboard.isDown(Phaser.Keyboard.D)){
 			player.body.velocity.x = velocityRight;
 			direccion = 1;
 			player.frame = 4;
+			
 		}
     }
 	else {
@@ -494,15 +350,15 @@ function update() {
 	if (game.input.keyboard.isDown(Phaser.Keyboard.W) && player.body.touching.down)
     {
         player.body.velocity.y = -350;
-		jumpMusic = game.add.audio('jumpmusic');
-    		 jumpMusic.play();
+        jumpMusic = game.add.audio('jumpmusic'); 
+    	jumpMusic.play();
 	}
 	
 	// DISPARO
 	if (game.input.keyboard.isDown(Phaser.Keyboard.X) && convertidoPollo == false)
     {
       fireBullet(0);
-	  shootMusic = game.add.audio('shoot');
+      shootMusic = game.add.audio('shoot');
       shootMusic.play();
     }
 	
@@ -542,12 +398,14 @@ function update() {
 			player1.body.velocity.x = velocityLeft;
 			direccion1 = -1;
 			player1.frame = 5;
+			
 		}
 		//SALTO DERECHA
 		else if (game.input.keyboard.isDown(Phaser.Keyboard.J)){
 			player1.body.velocity.x = velocityRight;
 			direccion1 = 1;
 			player1.frame = 4;
+			
 		}
     }
 	else {
@@ -581,7 +439,7 @@ function update() {
 	if (game.input.keyboard.isDown(Phaser.Keyboard.Y) && player1.body.touching.down)
     {
         player1.body.velocity.y = -350;
-		jumpMusic = game.add.audio('jumpmusic');
+        jumpMusic = game.add.audio('jumpmusic');
     		 jumpMusic.play();
 	}
 	
@@ -589,8 +447,8 @@ function update() {
 	if (game.input.keyboard.isDown(Phaser.Keyboard.M) && convertidoPollo == false)
     {
         fireBullet(1);
-		shootMusic = game.add.audio('shoot');
-		shootMusic.play();
+        shootMusic = game.add.audio('shoot');
+      shootMusic.play();
     }
 	
 	/*
@@ -629,12 +487,14 @@ function update() {
 			player2.body.velocity.x = velocityLeft;
 			direccion2 = -1;
 			player2.frame = 5;
+			
 		}
 		//SALTO DERECHA
 		else if (game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)){
 			player2.body.velocity.x = velocityRight;
 			direccion2 = 1;
 			player2.frame = 4;
+			
 		}
     }
 	else {
@@ -668,7 +528,7 @@ function update() {
 	if (game.input.keyboard.isDown(Phaser.Keyboard.UP) && player2.body.touching.down)
     {
         player2.body.velocity.y = -350;
-		jumpMusic = game.add.audio('jumpmusic');
+        jumpMusic = game.add.audio('jumpmusic');
     		 jumpMusic.play();
 	}
 	
@@ -676,8 +536,8 @@ function update() {
 	if (game.input.keyboard.isDown(Phaser.Keyboard.NUMPAD_0) && convertidoPollo == false)
     {
         fireBullet(2);
-		shootMusic = game.add.audio('shoot');
-		shootMusic.play();
+        shootMusic = game.add.audio('shoot');
+      shootMusic.play();
     }
 	
 	/*
@@ -722,6 +582,7 @@ function update() {
 			player3.body.velocity.x = velocityRight;
 			direccion3 = 1;
 			player3.frame = 4;
+			
 		}
     }
 	else {
@@ -755,7 +616,7 @@ function update() {
 	if (game.input.keyboard.isDown(Phaser.Keyboard.NUMPAD_8) && player3.body.touching.down)
     {
         player3.body.velocity.y = -350;
-		jumpMusic = game.add.audio('jumpmusic');
+        jumpMusic = game.add.audio('jumpmusic');
     		 jumpMusic.play();
 	}
 	
@@ -763,8 +624,8 @@ function update() {
 	if (game.input.keyboard.isDown(Phaser.Keyboard.NUMPAD_ADD) && convertidoPollo == false)
     {
         fireBullet(3);
-		shootMusic = game.add.audio('shoot');
-		shootMusic.play();
+        shootMusic = game.add.audio('shoot');
+      shootMusic.play();
     }
 }
 
@@ -902,56 +763,6 @@ function fireBullet (n) {
 	}
 }
 
-function hitPlayer(bullet_a, playerss){
-
-	bullet_a.kill();
-	if (lifePlayer > 0) {
-		lifePlayer -= 10;
-		healthB.scale.x = lifePlayer/100;
-	}
-	/*else {
-		playerss.kill();
-	}*/
-	
-	
-}
-function hitPlayer1(bullet_a, playerss){
-
-	bullet_a.kill();
-	
-	if  (lifePlayer1 > 0) {
-		lifePlayer1 -= 10;
-		healthB1.scale.x = lifePlayer1/100;
-	}
-	/*else {
-		playerss.kill();
-	}*/
-	
-}
-function hitPlayer2(bullet_a, playerss){
-
-	bullet_a.kill();
-	if  (lifePlayer2 > 0) {
-		lifePlayer2 -= 10;
-		healthB2.scale.x = lifePlayer2/100;
-	}
-	/*else 
-		playerss.kill();*/
-	
-}
-function hitPlayer3(bullet_a, playerss){
-
-	bullet_a.kill();
-	
-	if  (lifePlayer3 > 0) {
-		lifePlayer3 -= 10;
-		healthB3.scale.x = lifePlayer3/100;
-	}
-	/*else
-		playerss.kill();*/
-	
-}
-
 function createObject() {
     var crearObjeto = Math.floor(Math.random()*3);
    
@@ -989,8 +800,7 @@ function createObject() {
 function collectLife (player, life) {
     // Quita el holograma del juego
     life.kill();
-	
-	lifeMusic = game.add.audio('lifemusic');
+    lifeMusic = game.add.audio('lifemusic');
     lifeMusic.play();
     lifeMusic.volume = 1;
 
@@ -1003,9 +813,7 @@ function collectPollo (player, pollo) {
     objetoRecogido = false;
     convertidoPollo = true;
     convertirPollos();
-    game.time.events.add(Phaser.Timer.SECOND * 4, vueltaNormalidad, this);
-	
-	if(music.isPlaying) {
+    if(music.isPlaying) {
         music.pause();
     }
 
@@ -1013,15 +821,17 @@ function collectPollo (player, pollo) {
     chickenMusic.play();
     chickenMusic.volume = 0.7;
 
+    game.time.events.add(Phaser.Timer.SECOND * 4, vueltaNormalidad, this);
+
 }
 
 function collectCactus (player, cactus) {
     cactus.kill();
     velocidadMaxima();
-    game.time.events.add(Phaser.Timer.SECOND * 4, velocidadNormal, this);
+    game.time.events.add(Phaser.Timer.SECOND * 10, velocidadNormal, this);
     objetoRecogido = false;
-	
-	if(music.isPlaying) {
+
+    if(music.isPlaying) {
         music.pause();
     }else if(cactusMusic.isPlaying){
     	cactusMusic.pause();
@@ -1097,7 +907,7 @@ function vueltaNormalidad() {
         player3.body.gravity.y = 300;
         
         convertidoPollo = false;
-		 music.resume();
+        music.resume();
     }
 }
 
