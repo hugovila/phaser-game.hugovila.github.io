@@ -42,6 +42,18 @@
 		}
 
     </style>
+	<script type="text/javascript">
+
+		function initElement() {
+			var p = document.getElementByTagName("canvas");
+			p.onclick = startGame();
+		};
+
+		function startGame() {
+			window.document.location.href = 'index2.html';
+		}
+		initElement();
+	</script>
 </head>
 <body>
 <div id="game">
